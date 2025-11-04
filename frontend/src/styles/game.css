@@ -1,0 +1,288 @@
+/* src/styles/game.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.game-container {
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+  font-family: 'Courier New', monospace;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Canvas */
+.canvas-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.game-canvas {
+  background: #000;
+  max-width: 95%;
+  max-height: 90%;
+  object-fit: contain;
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+}
+
+/* UI del juego */
+.game-ui {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+}
+
+.score {
+  font-size: 1.4rem;
+  color: #00ff00;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 0 #000;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: 1px solid #00ff00;
+}
+
+.enemy-indicators {
+  margin-top: 1rem;
+}
+
+.enemy-indicator {
+  padding: 5px 10px;
+  margin: 5px 0;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid;
+}
+
+.enemy-indicator.cannon {
+  color: #FFA500;
+  border-color: #FFA500;
+}
+
+.enemy-indicator.enemy {
+  color: #FF4444;
+  border-color: #FF4444;
+}
+
+.enemy-indicator.plane {
+  color: #44FF44;
+  border-color: #44FF44;
+}
+
+/* Indicadores de escudo */
+.shield-indicator {
+  padding: 6px 12px;
+  margin: 4px 0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.shield-indicator.available {
+  color: #0088FF;
+  border: 1px solid #0088FF;
+  animation: pulse 2s infinite;
+}
+
+.shield-indicator.active {
+  color: #00FFFF;
+  border: 1px solid #00FFFF;
+  background: rgba(0, 255, 255, 0.1);
+  animation: pulse 1s infinite;
+}
+
+/* Notificaciones en la parte superior */
+.notifications-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.notification-top {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  margin: 5px 0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  animation: slideDown 0.3s ease-out, fadeOut 0.5s ease-in 2s forwards;
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid;
+  text-shadow: 2px 2px 0 #000;
+  max-width: 300px;
+}
+
+.notification-top.warning {
+  color: #FFA500;
+  border-color: #FFA500;
+}
+
+.notification-top.danger {
+  color: #FF4444;
+  border-color: #FF4444;
+}
+
+.notification-top.info {
+  color: #00FFFF;
+  border-color: #00FFFF;
+}
+
+/* Modal de Game Over */
+.game-over-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.game-over-content {
+  background: rgba(0, 0, 0, 0.95);
+  padding: 3rem;
+  border-radius: 10px;
+  border: 2px solid #ff0000;
+  text-align: center;
+  min-width: 300px;
+  max-width: 90%;
+}
+
+.game-over-content h2 {
+  color: #ff0000;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.game-over-content p {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: white;
+}
+
+/* Botones */
+.retro-btn {
+  background: #00ff00;
+  color: #000;
+  border: 2px solid #000;
+  padding: 15px 30px;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 10px;
+  transition: all 0.3s ease;
+  border-radius: 5px;
+}
+
+.retro-btn:hover {
+  background: #ffff00;
+  transform: scale(1.05);
+}
+
+/* Animaciones */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .game-ui {
+    top: 10px;
+    left: 10px;
+  }
+  
+  .score {
+    font-size: 1.1rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .enemy-indicator {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+  
+  .shield-indicator {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+  
+  .notification-top {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    max-width: 250px;
+  }
+  
+  .game-over-content {
+    padding: 2rem;
+  }
+  
+  .game-over-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .game-over-content p {
+    font-size: 1.1rem;
+  }
+  
+  .retro-btn {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+  }
+  
+  .game-canvas {
+    max-width: 98%;
+    max-height: 85%;
+  }
+}

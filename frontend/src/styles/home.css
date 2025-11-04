@@ -1,0 +1,157 @@
+/* Contenedor principal */
+.home-container,
+.login-container,
+.register-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Press Start 2P", cursive;
+  overflow: hidden;
+}
+
+/* Wrapper idéntico para Login y Register */
+.login-form-wrapper,
+.register-form-wrapper,
+.home-content {
+  z-index: 2;
+  padding: 40px 30px;
+  border-radius: 12px;
+  text-align: center;
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+/* Títulos */
+.login-form h2,
+.register-form h2,
+.home-content h1 {
+  color: #fff;
+  margin-bottom: 20px;
+  font-size: 16px;
+  text-shadow: 2px 2px 0px #000;
+}
+
+/* Inputs retro */
+.login-form input,
+.register-form input {
+  width: 300px;   /* 👈 ancho fijo */
+  max-width: 90%; /* 👈 para que en móviles no se corte */
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border: 2px solid #000;
+  border-radius: 6px;
+  font-family: "Press Start 2P", cursive;
+  font-size: 12px;
+  background: #f0f0f0;
+  box-shadow: 3px 3px 0px #000;
+  outline: none;
+}
+
+
+/* Botones retro */
+.retro-btn {
+  font-family: "Press Start 2P", cursive;
+  font-size: 12px;
+  text-transform: uppercase;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 3px 3px 0px #000;
+  cursor: pointer;
+  margin: 10px 5px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.retro-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px #000;
+}
+
+.retro-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #000;
+}
+
+/* Agrega esto a tu home.css */
+.message {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.login-link p {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.login-link span {
+  color: #00ff00;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-link span:hover {
+  color: #ffff00;
+}
+
+/* Estilos para botones deshabilitados */
+.retro-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.retro-btn:disabled:hover {
+  transform: none !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+/* Colores de botones */
+.login-btn { background: #3b82f6; color: white; }   /* Azul */
+.register-btn { background: #22c55e; color: white; } /* Verde */
+.back-btn { background: #ef4444; color: white; }     /* Rojo */
+.alt-back-btn { background: #000; color: white; }    /* Negro estilo "volver" del login */
+
+/* Contenedor de botones vertical */
+.form-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+/* Animación fadeIn */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mensajes debajo del formulario */
+.login-form p,
+.register-form p {
+  color: #fff;
+  margin-top: 10px;
+  font-size: 12px;
+  text-shadow: 1px 1px 2px #000;
+}
