@@ -1,0 +1,240 @@
+/* ----------------------
+   General
+-----------------------*/
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  height: 100%;
+  width: 100%;
+}
+
+/* ----------------------
+   Fondo animado (GIF)
+-----------------------*/
+.background-gif {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1; /* detrás del contenido */
+}
+
+/* ----------------------
+   Contenedor Home
+-----------------------*/
+.home-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: white;
+  padding: 20px;
+}
+
+.home-content h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
+}
+
+.home-content p {
+  font-size: 1.3rem;
+  margin-bottom: 40px;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+}
+
+.home-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.home-buttons .btn {
+  padding: 15px 25px;
+  border-radius: 12px;
+  font-size: 18px;
+  text-decoration: none;
+  text-align: center;
+  color: white;
+  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.login-btn {
+  background-color: #1e90ff;
+}
+
+.login-btn:hover {
+  transform: scale(1.05);
+  background-color: #1c86ee;
+}
+
+.register-btn {
+  background-color: #28a745;
+}
+
+.register-btn:hover {
+  transform: scale(1.05);
+  background-color: #218838;
+}
+
+/* ----------------------
+   Contenedor Login/Register
+-----------------------*/
+.login-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+}
+
+.login-form {
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-form input {
+  margin-bottom: 15px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.login-form button {
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  border: none;
+}
+
+.login-form button[type="button"] {
+  background-color: #333;
+  color: white;
+}
+
+.login-form button[type="button"]:hover {
+  background-color: #555;
+}
+
+/* ----------------------
+   Contenedor de juegos
+-----------------------*/
+.games-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(to right, #000000, #1a1a1a);
+  overflow: hidden;
+}
+
+.game-block {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 12px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: left 0.1s ease, top 0.1s ease;
+}
+
+.game-block.blue {
+  background-color: #1e90ff;
+}
+
+.game-block.red {
+  background-color: #ff4500;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 15px;
+  background-color: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+/* ----------------------
+   Responsive
+-----------------------*/
+@media (max-width: 480px) {
+  .home-content h1 {
+    font-size: 2rem;
+  }
+
+  .home-content p {
+    font-size: 1rem;
+  }
+
+  .home-buttons .btn {
+    font-size: 16px;
+    padding: 12px 20px;
+  }
+
+  .login-form {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .login-form input,
+  .login-form button {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .game-block {
+    width: 120px;
+    height: 120px;
+  }
+}

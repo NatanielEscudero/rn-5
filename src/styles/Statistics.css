@@ -1,0 +1,256 @@
+/* src/styles/Statistics.css */
+.statistics-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 0;
+}
+
+.statistics-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  opacity: 0.7;
+}
+
+.statistics-content {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 1000px;
+  width: 95%;
+  border: 5px solid #4a90e2;
+  margin: 20px 0;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Asegurar que el contenido sea scrollable */
+.statistics-content {
+  overflow-y: auto;
+}
+
+/* Header fijo */
+.statistics-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #4a90e2;
+  padding-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+/* Lista de puntuaciones con scroll interno */
+.scores-list-container {
+  background: white;
+  border-radius: 10px;
+  border: 3px solid #333;
+  overflow: hidden;
+  box-shadow: 3px 3px 0px #333;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.scores-list-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  background: #4a90e2;
+  color: white;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.scores-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.score-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.3s ease;
+}
+
+.score-item:hover {
+  background-color: #f5f5f5;
+}
+
+.score-item:last-child {
+  border-bottom: none;
+}
+
+.scores-footer {
+  padding: 1rem;
+  background: #f5f5f5;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  flex-shrink: 0;
+}
+
+/* Scrollbar personalizado */
+.statistics-content::-webkit-scrollbar {
+  width: 12px;
+}
+
+.statistics-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.statistics-content::-webkit-scrollbar-thumb {
+  background: #4a90e2;
+  border-radius: 6px;
+  border: 2px solid #f1f1f1;
+}
+
+.statistics-content::-webkit-scrollbar-thumb:hover {
+  background: #357abd;
+}
+
+.scores-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scores-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.scores-list::-webkit-scrollbar-thumb {
+  background: #4a90e2;
+  border-radius: 4px;
+}
+
+.scores-list::-webkit-scrollbar-thumb:hover {
+  background: #357abd;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .statistics-content {
+    padding: 1rem;
+    margin: 10px;
+    max-height: 85vh;
+  }
+
+  .scores-list-header,
+  .score-item {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .scores-list-header span:nth-child(3),
+  .scores-list-header span:nth-child(4),
+  .score-item .score-duration,
+  .score-item .score-game {
+    display: none;
+  }
+
+  .statistics-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .statistics-buttons .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+/* Resto de estilos se mantienen igual... */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 3px solid #333;
+  box-shadow: 3px 3px 0px #333;
+  text-align: center;
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2196f3;
+  margin-bottom: 0.5rem;
+}
+
+.summary-label {
+  color: #666;
+  font-weight: bold;
+}
+
+.score-date {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.score-points {
+  font-weight: bold;
+  color: #2196f3;
+  text-align: center;
+}
+
+.score-duration {
+  text-align: center;
+  color: #666;
+}
+
+.score-game {
+  text-align: center;
+  background: #e3f2fd;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  color: #1976d2;
+}
+
+.no-scores {
+  text-align: center;
+  padding: 3rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 2px dashed #dee2e6;
+}
+
+.guest-message {
+  text-align: center;
+  padding: 2rem;
+}
+
+.statistics-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
