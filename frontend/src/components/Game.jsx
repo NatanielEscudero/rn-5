@@ -1,6 +1,9 @@
 // src/components/Game.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/game.css';
+import { supabase } from '../config/supabase';
+import { supabaseGameService } from '../services/supabaseGameService';
 
 // Importar sistemas modularizados
 import { config, baseSpawnRates, canvasBaseSize } from '../utils/gameConfig';
@@ -36,19 +39,39 @@ import {
   drawBoatTrail,
   drawProjectiles 
 } from '../systems/renderSystem';
-import { loadAllImages, gameImages } from '../utils/imageLoader'; // Nuevo import
+import { loadAllImages } from '../utils/imageLoader';
 
 const Game = () => {
+  const navigate = useNavigate();
   const canvasRef = useRef(null);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false); // Cambiado a false para cargar imágenes primero
+  const [gameStarted, setGameStarted] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ 
     width: canvasBaseSize.width, 
     height: canvasBaseSize.height 
   });
+  const [user, setUser] = useState(null);
+
+  // 🔊 SFX disparo y música de fondo
+  const cannonSfxRef = useRef(null);
+  const bgMusicRef = useRef(null);
+
+  // Obtener usuario al cargar
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+      } catch (error) {
+        console.error('Error getting user:', error);
+      }
+    };
+
+    getCurrentUser();
+  }, []);
 
   // Cargar imágenes al montar el componente
   useEffect(() => {
@@ -64,6 +87,36 @@ const Game = () => {
 
     loadGameImages();
   }, []);
+
+  // Limpiar audio al desmontar
+  useEffect(() => {
+    return () => {
+      if (bgMusicRef.current) {
+        bgMusicRef.current.pause();
+        bgMusicRef.current.src = "";
+        bgMusicRef.current = null;
+      }
+      if (cannonSfxRef.current) {
+        cannonSfxRef.current.pause();
+        cannonSfxRef.current.src = "";
+        cannonSfxRef.current = null;
+      }
+    };
+  }, []);
+
+  // Pausar música y sfx si termina la partida
+  useEffect(() => {
+    if (gameOver) {
+      if (bgMusicRef.current) {
+        bgMusicRef.current.pause();
+        bgMusicRef.current.currentTime = 0;
+      }
+      if (cannonSfxRef.current) {
+        cannonSfxRef.current.pause();
+        cannonSfxRef.current.currentTime = 0;
+      }
+    }
+  }, [gameOver]);
 
   // Sistema de notificaciones mejorado
   const addNotification = (message, type = 'info') => {
@@ -177,6 +230,26 @@ const Game = () => {
     };
   }, []);
 
+  // Función para guardar puntuación
+  const saveScore = async (finalScore) => {
+    if (!user) {
+      console.log('Usuario no autenticado, no se guarda la puntuación');
+      return;
+    }
+
+    try {
+      await supabaseGameService.saveScore(user.id, {
+        score: finalScore,
+        duration: Math.floor(gameState.current.frameCount / 60), // Convertir frames a segundos
+        gameName: 'esquiva_islas'
+      });
+      addNotification('🏆 Puntuación guardada en el ranking', 'info');
+    } catch (error) {
+      console.error('Error guardando puntuación:', error);
+      addNotification('❌ Error guardando puntuación', 'danger');
+    }
+  };
+
   const checkEnemyUnlocks = () => {
     const state = gameState.current;
     
@@ -217,7 +290,15 @@ const Game = () => {
     
     if (state.cannonIslandsUnlocked) {
       spawnCannonIslands(state, frameCount, canvasSize);
-      updateCannonIslands(state, state.boat, config);
+      // 🔊 Disparo: saber si disparó y reproducir el SFX
+      const cannonFired = updateCannonIslands(state, state.boat, config);
+      if (cannonFired && cannonSfxRef.current) {
+        cannonSfxRef.current.currentTime = 0;
+        cannonSfxRef.current.play()
+          .catch((e) => {
+            console.warn("Play SFX rechazado:", e?.name, e?.message);
+          });
+      }
     }
     
     if (state.enemyBoatsUnlocked) {
@@ -242,6 +323,8 @@ const Game = () => {
     const shouldGameOver = checkCollisions(state, config, addNotification);
     if (shouldGameOver) {
       setGameOver(true);
+      // Guardar puntuación cuando termina el juego
+      saveScore(score);
     }
     
     if (frameCount % 10 === 0) {
@@ -252,9 +335,8 @@ const Game = () => {
   const renderGame = (ctx) => {
     const state = gameState.current;
 
-    // Limpiar canvas
-    ctx.fillStyle = '#87CEEB';
-    ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
+    // LIMPIAR CANVAS - AHORA TRANSPARENTE PARA VER EL FONDO DE AGUA
+    ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
 
     // Dibujar elementos con imágenes
     state.powerUps.forEach(powerUp => drawPowerUp(ctx, powerUp));
@@ -303,6 +385,63 @@ const Game = () => {
       return;
     }
 
+    // 🔊 Crear/desbloquear SFX disparo (si todavía no existe)
+    if (!cannonSfxRef.current) {
+      cannonSfxRef.current = new Audio("sounds/cannon.mp3");
+      cannonSfxRef.current.preload = "auto";
+      cannonSfxRef.current.volume = 0.7;
+
+      // desbloqueo por gesto
+      cannonSfxRef.current.muted = true;
+      cannonSfxRef.current.play()
+        .then(() => {
+          cannonSfxRef.current.pause();
+          cannonSfxRef.current.currentTime = 0;
+          cannonSfxRef.current.muted = false;
+        })
+        .catch((e) => {
+          console.warn("No se pudo desbloquear SFX en startGame:", e);
+        });
+
+      cannonSfxRef.current.addEventListener("error", () => {
+        console.error("No se pudo cargar sounds/cannon.mp3. Verificá que esté en public/sounds/");
+      });
+    }
+
+    // 🎵 Crear/desbloquear Música de fondo (loop)
+    if (!bgMusicRef.current) {
+      bgMusicRef.current = new Audio("sounds/background.mp3");
+      bgMusicRef.current.preload = "auto";
+      bgMusicRef.current.loop = true;
+      bgMusicRef.current.volume = 0.35;
+
+      // desbloqueo por gesto
+      bgMusicRef.current.muted = true;
+      bgMusicRef.current.play()
+        .then(() => {
+          bgMusicRef.current.pause();
+          bgMusicRef.current.currentTime = 0;
+          bgMusicRef.current.muted = false;
+        })
+        .catch((e) => {
+          console.warn("No se pudo desbloquear música en startGame:", e);
+        });
+
+      bgMusicRef.current.addEventListener("error", () => {
+        console.error("No se pudo cargar sounds/background.mp3. Verificá que esté en public/sounds/");
+      });
+    }
+
+    // Iniciar música (por si ya existía de una partida anterior)
+    if (bgMusicRef.current) {
+      try {
+        bgMusicRef.current.currentTime = 0;
+        bgMusicRef.current.play().catch((e) => {
+          console.warn("Play música rechazado:", e?.name, e?.message);
+        });
+      } catch {}
+    }
+
     setGameStarted(true);
     setGameOver(false);
     setScore(0);
@@ -344,10 +483,32 @@ const Game = () => {
     };
   };
 
+  // Función para volver al dashboard (paramos música/SFX)
+  const goToDashboard = () => {
+    if (bgMusicRef.current) {
+      bgMusicRef.current.pause();
+      bgMusicRef.current.currentTime = 0;
+    }
+    if (cannonSfxRef.current) {
+      cannonSfxRef.current.pause();
+      cannonSfxRef.current.currentTime = 0;
+    }
+    navigate('/dashboard');
+  };
+
   // Pantalla de inicio
   if (!gameStarted) {
     return (
       <div className="game-container">
+        {/* FONDO DE AGUA ANIMADO SOLO EN EL CONTENEDOR DEL CANVAS */}
+        <div className="canvas-background-container">
+          <img
+            src="/imagenes/agua.gif"
+            alt="Fondo agua animado"
+            className="canvas-background"
+          />
+        </div>
+        
         <div className="game-start-screen">
           <h1>🌊 Esquiva Islas 🏝️</h1>
           <p>🚤 Usa las flechas ← → para girar</p>
@@ -358,6 +519,15 @@ const Game = () => {
           <p>⚡ Barcos perseguidores a los {config.enemySpawnScore} puntos</p>
           <p>✈️ Aviones bombardeadores a los {config.planeSpawnScore} puntos</p>
           
+          {/* Información del usuario */}
+          <div className="user-game-info">
+            {user ? (
+              <p>✅ Jugando como: <strong>{user.user_metadata?.username || user.email}</strong></p>
+            ) : (
+              <p className="guest-warning">⚠️ Modo invitado - Las puntuaciones no se guardarán</p>
+            )}
+          </div>
+          
           <div className="loading-status">
             {!imagesLoaded ? (
               <p>🔄 Cargando imágenes...</p>
@@ -366,13 +536,22 @@ const Game = () => {
             )}
           </div>
           
-          <button 
-            className="retro-btn" 
-            onClick={startGame}
-            disabled={!imagesLoaded}
-          >
-            {imagesLoaded ? '🎮 Comenzar Juego' : '⏳ Cargando...'}
-          </button>
+          <div className="start-screen-buttons">
+            <button 
+              className="retro-btn" 
+              onClick={startGame}
+              disabled={!imagesLoaded}
+            >
+              {imagesLoaded ? '🎮 Comenzar Juego' : '⏳ Cargando...'}
+            </button>
+            
+            <button 
+              className="retro-btn back-btn"
+              onClick={goToDashboard}
+            >
+              🏠 Volver al Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -380,6 +559,15 @@ const Game = () => {
 
   return (
     <div className="game-container">
+      {/* FONDO DE AGUA ANIMADO SOLO EN EL CONTENEDOR DEL CANVAS */}
+      <div className="canvas-background-container">
+        <img
+          src="/imagenes/agua.gif"
+          alt="Fondo agua animado"
+          className="canvas-background"
+        />
+      </div>
+
       {/* Notificaciones en la parte superior */}
       <div className="notifications-top">
         {notifications.map((notification, index) => (
@@ -435,9 +623,24 @@ const Game = () => {
           <div className="game-over-content">
             <h2>💀 ¡Juego Terminado! 💀</h2>
             <p>Puntuación final: {score}</p>
-            <button className="retro-btn" onClick={startGame}>
-              🔄 Jugar de Nuevo
-            </button>
+            {user ? (
+              <p>✅ Puntuación guardada en el ranking</p>
+            ) : (
+              <p>⚠️ Inicia sesión para guardar tus puntuaciones</p>
+            )}
+            
+            <div className="game-over-buttons">
+              <button className="retro-btn play-again-btn" onClick={startGame}>
+                🔄 Jugar de Nuevo
+              </button>
+              
+              <button 
+                className="retro-btn dashboard-btn"
+                onClick={goToDashboard}
+              >
+                🏠 Volver al Dashboard
+              </button>
+            </div>
           </div>
         </div>
       )}

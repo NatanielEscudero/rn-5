@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Games from "./pages/Games";
 import Game from "./components/Game"; // Asegúrate de que esta ruta sea correcta
+import Statistics from './components/Statistics';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/games" element={<Games />} />
         <Route path="/game" element={<Game />} /> {/* Agrega esta línea */}
+        <Route path="/statistics" element={<Statistics />} />
       </Routes>
     </Router>
   );

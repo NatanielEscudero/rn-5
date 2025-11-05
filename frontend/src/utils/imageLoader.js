@@ -31,14 +31,14 @@ const loadAllImages = async () => {
     console.log('Rutas base:', window.location.origin);
     
     const imagesToLoad = [
-      { key: 'playerBoat', src: '/imagenes/barco_usuario.gif' },
-      { key: 'normalIsland', src: '/imagenes/isla.jpg' },
-      { key: 'cannonIsland', src: '/imagenes/cañon.jpg' },
-      { key: 'enemyBoat', src: '/imagenes/Barco_enemigo.gif' },
-      { key: 'plane', src: '/imagenes/avion.gif' },
-      { key: 'powerUp', src: '/imagenes/escudo.gif' },
-      { key: 'bullet', src: '/imagenes/bola_cañon.gif' },
-      { key: 'bomb', src: '/imagenes/bola_cañon.gif' }
+      { key: 'playerBoat', src: '/imagenes/barco.png' },
+      { key: 'normalIsland', src: '/imagenes/isla.png' },
+      { key: 'cannonIsland', src: '/imagenes/cañon.png' },
+      { key: 'enemyBoat', src: '/imagenes/Barco_enemigo.png' },
+      { key: 'plane', src: '/imagenes/avion.png' },
+      { key: 'powerUp', src: '/imagenes/escudo.png' },
+      { key: 'bullet', src: '/imagenes/bola_cañon.png' },
+      { key: 'bomb', src: '/imagenes/bomba.png' }
     ];
 
     // Verificar si la carpeta existe

@@ -1,96 +1,134 @@
-// src/services/supabaseGameService.js
+// src/services/supabaseGameService.js - VERSIÓN CORREGIDA
 import { supabase } from '../config/supabase'
 
 export const supabaseGameService = {
   getUserStats: async (userId) => {
     try {
-      // Verificar que Supabase esté configurado
+      console.log('🔍 Getting stats for user:', userId);
+      
       if (!supabase || !userId) {
-        throw new Error('Supabase no configurado o usuario no válido')
+        return getDefaultStats();
       }
 
-      // Primero intentamos usar la función PostgreSQL si existe
-      const { data, error } = await supabase
-        .rpc('get_user_stats', { user_id_param: userId })
+      // Consultar puntuaciones del usuario
+      const { data: scores, error } = await supabase
+        .from('game_scores')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        return {
-          highestScore: data[0].highest_score || 0,
-          totalGames: data[0].total_games || 0,
-          averageScore: data[0].average_score || 0,
-          lastScores: data[0].last_scores || []
-        }
+      if (error) {
+        console.error('❌ Error fetching scores:', error);
+        return getDefaultStats();
       }
 
-      // Fallback: consulta manual
-      return await getUserStatsFallback(userId)
+      console.log('📊 Scores found:', scores?.length || 0);
+
+      // Calcular estadísticas
+      const scoreValues = scores ? scores.map(s => s.score || 0) : [];
+      const highestScore = scoreValues.length > 0 ? Math.max(...scoreValues) : 0;
+      const totalGames = scoreValues.length;
+      const averageScore = scoreValues.length > 0 
+        ? Math.round(scoreValues.reduce((sum, score) => sum + score, 0) / scoreValues.length)
+        : 0;
+      const lastScores = scoreValues.slice(0, 5);
+
+      return { 
+        highestScore, 
+        totalGames, 
+        averageScore, 
+        lastScores 
+      };
+      
     } catch (error) {
-      console.error('Error fetching user stats:', error)
-      // Devolver valores por defecto en caso de error
-      return {
-        highestScore: 0,
-        totalGames: 0,
-        averageScore: 0,
-        lastScores: []
-      }
+      console.error('❌ Error in getUserStats:', error);
+      return getDefaultStats();
     }
   },
 
   saveScore: async (userId, gameData) => {
     try {
-      if (!supabase || !userId) {
-        throw new Error('Supabase no configurado o usuario no válido')
+      console.log('💾 Saving score for user:', userId);
+      
+      if (!supabase) {
+        throw new Error('Supabase no configurado');
       }
 
+      if (!userId) {
+        throw new Error('Usuario no válido');
+      }
+
+      // PREPARAR DATOS CORRECTAMENTE
+      const scoreData = {
+        user_id: userId, // Esto debe ser UUID
+        score: parseInt(gameData.score) || 0,
+        duration: parseInt(gameData.duration) || 0,
+        created_at: new Date().toISOString()
+      };
+
+      // Solo agregar game_name si la columna existe
+      if (gameData.gameName) {
+        scoreData.game_name = gameData.gameName;
+      }
+
+      console.log('📤 Inserting score data:', scoreData);
+
+      // Intentar inserción simple
       const { data, error } = await supabase
         .from('game_scores')
-        .insert([
-          {
-            user_id: userId,
-            game_name: gameData.gameName || 'esquiva_islas',
-            score: gameData.score,
-            duration: gameData.duration || 0,
-            created_at: new Date().toISOString()
-          }
-        ])
-        .select()
+        .insert([scoreData])
+        .select();
 
-      if (error) throw error
-      return data[0]
+      if (error) {
+        console.error('❌ Insert error:', error);
+        
+        // Si falla, intentar sin SELECT (puede ser problema de RLS)
+        const { error: simpleError } = await supabase
+          .from('game_scores')
+          .insert([scoreData]);
+          
+        if (simpleError) {
+          throw simpleError;
+        }
+        
+        console.log('✅ Score saved (without select)');
+        return { id: 'local', ...scoreData };
+      }
+
+      console.log('✅ Score saved successfully:', data);
+      return data[0];
+      
     } catch (error) {
-      console.error('Error saving score:', error)
-      throw error
+      console.error('❌ Error saving score:', error);
+      throw error;
+    }
+  },
+
+  // Método para diagnosticar la tabla
+  diagnoseTable: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('game_scores')
+        .select('*')
+        .limit(1);
+
+      return {
+        success: !error,
+        error: error?.message,
+        sampleData: data?.[0]
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
     }
   }
-}
+};
 
-// Función fallback
-const getUserStatsFallback = async (userId) => {
-  try {
-    const { data: scores, error } = await supabase
-      .from('game_scores')
-      .select('score, created_at')
-      .eq('user_id', userId)
-      .eq('game_name', 'esquiva_islas')
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
-
-    const highestScore = scores && scores.length > 0 ? Math.max(...scores.map(s => s.score)) : 0
-    const totalGames = scores ? scores.length : 0
-    const averageScore = scores && scores.length > 0 
-      ? Math.round(scores.reduce((sum, item) => sum + item.score, 0) / scores.length)
-      : 0
-    const lastScores = scores ? scores.slice(0, 5).map(item => item.score) : []
-
-    return { highestScore, totalGames, averageScore, lastScores }
-  } catch (error) {
-    console.error('Error in fallback:', error)
-    return {
-      highestScore: 0,
-      totalGames: 0,
-      averageScore: 0,
-      lastScores: []
-    }
-  }
-}
+const getDefaultStats = () => ({
+  highestScore: 0,
+  totalGames: 0,
+  averageScore: 0,
+  lastScores: []
+});

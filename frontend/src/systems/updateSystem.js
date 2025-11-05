@@ -38,7 +38,6 @@ export const updateShield = (state, config) => {
     }
   }
   
-  
   return notifications;
 };
 
@@ -66,10 +65,13 @@ export const updateDisabledEnemies = (state) => {
   return notifications;
 };
 
+// 🔊 MODIFICADO: ahora devuelve true si alguna isla disparó en este frame
 export const updateCannonIslands = (state, boat, config) => {
   // Asegurarse de que cannonIslands sea un array
-  if (!state.cannonIslands) return;
+  if (!state.cannonIslands) return false;
   
+  let firedThisFrame = false;
+
   state.cannonIslands.forEach((island) => {
     if (!island) return;
     
@@ -91,8 +93,11 @@ export const updateCannonIslands = (state, boat, config) => {
         type: 'cannon'
       });
       island.bulletCooldown = island.maxBulletCooldown;
+      firedThisFrame = true; // ⬅️ Hubo disparo este frame
     }
   });
+
+  return firedThisFrame;
 };
 
 export const updateEnemies = (state, boat, canvasSize) => {

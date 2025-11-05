@@ -4,7 +4,7 @@ import { supabase } from "../config/supabase";
 import "../styles/home.css";
 
 export default function Login() {
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,36 +16,108 @@ export default function Login() {
     setMessage("");
 
     try {
-      // Buscar usuario por email o username
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('id, username, email, password')
-        .or(`email.eq.${identifier},username.eq.${identifier}`)
-        .single();
+      // Usar autenticación nativa de Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password
+      });
 
-      if (error || !user) {
-        throw new Error('Usuario no encontrado');
+      if (error) {
+        throw error;
       }
 
-      // Verificar contraseña (sin hash por ahora)
-      if (user.password !== password) {
-        throw new Error('Contraseña incorrecta');
+      if (data.user) {
+        console.log("✅ Login exitoso:", data.user);
+        
+        // Obtener información adicional del usuario si es necesario
+        const { data: userProfile, error: profileError } = await supabase
+          .from('users')
+          .select('username')
+          .eq('id', data.user.id)
+          .single();
+
+        // Guardar información básica en localStorage (opcional)
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          username: userProfile?.username || data.user.email.split('@')[0]
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        setMessage("✅ ¡Inicio de sesión exitoso!");
+        
+        // Redirigir después de un breve delay
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
       }
-
-      // Guardar sesión en localStorage
-      const userData = {
-        id: user.id,
-        username: user.username,
-        email: user.email
-      };
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      setMessage("✅ ¡Inicio de sesión exitoso!");
-      setTimeout(() => navigate("/dashboard"), 1000);
 
     } catch (error) {
-      console.error('Error en login:', error);
-      setMessage(`❌ ${error.message}`);
+      console.error('❌ Error en login:', error);
+      
+      // Mensajes de error más amigables
+      let errorMessage = "Error en el inicio de sesión";
+      
+      if (error.message.includes('Invalid login credentials')) {
+        errorMessage = "Email o contraseña incorrectos";
+      } else if (error.message.includes('Email not confirmed')) {
+        errorMessage = "Por favor confirma tu email antes de iniciar sesión";
+      } else if (error.message.includes('Too many requests')) {
+        errorMessage = "Demasiados intentos. Intenta más tarde";
+      } else {
+        errorMessage = error.message;
+      }
+      
+      setMessage(`❌ ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para login con Google
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setMessage("");
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+
+      if (error) throw error;
+      
+    } catch (error) {
+      console.error('❌ Error en login con Google:', error);
+      setMessage(`❌ Error al iniciar sesión con Google`);
+      setLoading(false);
+    }
+  };
+
+  // Función para recuperar contraseña
+  const handlePasswordReset = async () => {
+    if (!email) {
+      setMessage("❌ Ingresa tu email para recuperar la contraseña");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+      
+      setMessage("✅ Email de recuperación enviado. Revisa tu bandeja de entrada.");
+      
+    } catch (error) {
+      console.error('❌ Error al enviar email de recuperación:', error);
+      setMessage(`❌ Error al enviar email de recuperación`);
     } finally {
       setLoading(false);
     }
@@ -65,23 +137,27 @@ export default function Login() {
         <form className="register-form" onSubmit={handleLogin}>
           <h2>Iniciar Sesión</h2>
           
-          <input
-            type="text"
-            placeholder="Email o Nombre de Usuario"
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            required
-            disabled={loading}
-          />
+          <div className="input-group">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
           
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-          />
+          <div className="input-group">
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
           
           <div className="form-buttons">
             <button 
@@ -94,11 +170,20 @@ export default function Login() {
             
             <button
               type="button"
+              className="retro-btn google-btn"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
+              🔐 Google
+            </button>
+            
+            <button
+              type="button"
               className="retro-btn back-btn"
               onClick={() => navigate("/")}
               disabled={loading}
             >
-              Volver
+              ← Volver
             </button>
           </div>
           
@@ -108,8 +193,25 @@ export default function Login() {
             </div>
           )}
 
-          <div className="login-link">
-            <p>¿No tienes cuenta? <span onClick={() => navigate("/register")}>Regístrate aquí</span></p>
+          <div className="auth-links">
+            <p>
+              ¿No tienes cuenta?{" "}
+              <span 
+                className="link" 
+                onClick={() => navigate("/register")}
+              >
+                Regístrate aquí
+              </span>
+            </p>
+            
+            <p>
+              <span 
+                className="link" 
+                onClick={handlePasswordReset}
+              >
+                ¿Olvidaste tu contraseña?
+              </span>
+            </p>
           </div>
         </form>
       </div>
