@@ -1,3 +1,46 @@
+// src/components/Game.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../styles/game.css';
+import { supabase } from '../config/supabase';
+import { supabaseGameService } from '../services/supabaseGameService';
+
+// Importar sistemas modularizados
+import { config, baseSpawnRates, canvasBaseSize } from '../utils/gameConfig';
+import { 
+  adjustSpawnRates, 
+  spawnIslands, 
+  spawnCannonIslands, 
+  spawnEnemies, 
+  spawnPlanes, 
+  spawnPowerUps 
+} from '../systems/spawnSystem';
+import { 
+  updateBoat, 
+  updateShield, 
+  updateDisabledEnemies, 
+  updateCannonIslands, 
+  updateEnemies, 
+  updatePlanes, 
+  updateBullets, 
+  updateBombs, 
+  updatePowerUps,
+  checkCollisions 
+} from '../systems/updateSystem';
+import { activatePowerUp } from '../systems/powerUpSystem';
+import { 
+  drawNormalIsland, 
+  drawCannonIsland, 
+  drawEnemyBoat, 
+  drawPlane, 
+  drawPlayerBoat, 
+  drawPowerUp, 
+  drawShield, 
+  drawBoatTrail,
+  drawProjectiles 
+} from '../systems/renderSystem';
+import { loadAllImages } from '../utils/imageLoader';
+
 const Game = () => {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
@@ -51,6 +94,7 @@ const Game = () => {
     state.keys.left = false;
     state.keys.right = false;
   };
+
   // Obtener usuario al cargar
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -439,40 +483,50 @@ const Game = () => {
     setScore(0);
     setNotifications([]);
     
-    gameState.current = {
-      boat: {
-        x: canvasSize.width / 2, 
-        y: canvasSize.height - 100, 
-        width: 50, 
-        height: 75, 
-        angle: 0, 
-        speed: 4, 
-        rotationSpeed: 4,
-        hasEmergencyShield: false,
-        isInvulnerable: false,
-        invulnerabilityTimer: 0
-      },
-      islands: [], 
-      cannonIslands: [], 
-      enemyBoats: [], 
-      planes: [], 
-      bullets: [], 
-      bombs: [], 
-      powerUps: [],
-      frameCount: 0,
-      lastIslandSpawn: 0, 
-      lastCannonIslandSpawn: 0, 
-      lastEnemySpawn: 0, 
-      lastPlaneSpawn: 0, 
-      lastPowerUpSpawn: 0,
-      keys: { left: false, right: false },
-      cannonIslandsUnlocked: false, 
-      enemyBoatsUnlocked: false, 
-      planesUnlocked: false,
-      baseSpawnRates: baseSpawnRates, 
-      currentSpawnRates: { ...baseSpawnRates },
-      disabledEnemies: []
-    };
+    // CORRECCIÓN: Actualizar las propiedades sin perder la referencia
+    const state = gameState.current;
+    
+    // Resetear el barco
+    state.boat.x = canvasSize.width / 2;
+    state.boat.y = canvasSize.height - 100;
+    state.boat.width = 50;
+    state.boat.height = 75;
+    state.boat.angle = 0;
+    state.boat.speed = 4;
+    state.boat.rotationSpeed = 4;
+    state.boat.hasEmergencyShield = false;
+    state.boat.isInvulnerable = false;
+    state.boat.invulnerabilityTimer = 0;
+    
+    // Resetear arrays
+    state.islands = [];
+    state.cannonIslands = [];
+    state.enemyBoats = [];
+    state.planes = [];
+    state.bullets = [];
+    state.bombs = [];
+    state.powerUps = [];
+    
+    // Resetear contadores
+    state.frameCount = 0;
+    state.lastIslandSpawn = 0;
+    state.lastCannonIslandSpawn = 0;
+    state.lastEnemySpawn = 0;
+    state.lastPlaneSpawn = 0;
+    state.lastPowerUpSpawn = 0;
+    
+    // Resetear controles
+    state.keys.left = false;
+    state.keys.right = false;
+    
+    // Resetear unlocks
+    state.cannonIslandsUnlocked = false;
+    state.enemyBoatsUnlocked = false;
+    state.planesUnlocked = false;
+    
+    // Resetear spawn rates
+    state.currentSpawnRates = { ...baseSpawnRates };
+    state.disabledEnemies = [];
   };
 
   // Función para volver al dashboard (paramos música/SFX)
@@ -549,7 +603,7 @@ const Game = () => {
     );
   }
 
-return (
+  return (
     <div className="game-container">
       {/* FONDO DE AGUA ANIMADO SOLO EN EL CONTENEDOR DEL CANVAS */}
       <div className="canvas-background-container">

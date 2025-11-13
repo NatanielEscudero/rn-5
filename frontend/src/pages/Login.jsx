@@ -170,15 +170,6 @@ export default function Login() {
             
             <button
               type="button"
-              className="retro-btn google-btn"
-              onClick={handleGoogleLogin}
-              disabled={loading}
-            >
-              🔐 Google
-            </button>
-            
-            <button
-              type="button"
               className="retro-btn back-btn"
               onClick={() => navigate("/")}
               disabled={loading}
