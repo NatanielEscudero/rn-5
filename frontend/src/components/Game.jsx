@@ -61,33 +61,56 @@ const Game = () => {
   const cannonSfxRef = useRef(null);
   const bgMusicRef = useRef(null);
 
-  // Detectar si es móvil - MEJORADO
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobileCheck = 
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-        window.innerWidth <= 768 ||
-        (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
-      
-      console.log('📱 Detección móvil:', {
-        userAgent: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-        width: window.innerWidth,
-        touchPoints: navigator.maxTouchPoints,
-        isMobile: mobileCheck
-      });
-      
-      setIsMobile(mobileCheck);
-    };
+// Reemplaza el useEffect de detección de móviles con este:
+useEffect(() => {
+  const checkMobile = () => {
+    // Método más confiable para detectar móviles
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    window.addEventListener('orientationchange', checkMobile);
+    // Detección por User Agent
+    const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
     
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-      window.removeEventListener('orientationchange', checkMobile);
-    };
-  }, []);
+    // Detección por touch
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Detección por tamaño de pantalla
+    const isSmallScreen = window.innerWidth <= 768;
+    
+    // Detección por orientación
+    const isMobile = isMobileUserAgent || (hasTouch && isSmallScreen);
+    
+    console.log('📱 Detección móvil:', {
+      userAgent: userAgent,
+      isMobileUserAgent,
+      hasTouch,
+      maxTouchPoints: navigator.maxTouchPoints,
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight,
+      isSmallScreen,
+      finalDecision: isMobile
+    });
+    
+    setIsMobile(isMobile);
+  };
+
+  // Verificar inmediatamente
+  checkMobile();
+  
+  // También verificar después de un delay por si el DOM no está listo
+  const timeoutId = setTimeout(checkMobile, 1000);
+  
+  // Event listeners
+  window.addEventListener('resize', checkMobile);
+  window.addEventListener('orientationchange', checkMobile);
+  window.addEventListener('load', checkMobile);
+
+  return () => {
+    clearTimeout(timeoutId);
+    window.removeEventListener('resize', checkMobile);
+    window.removeEventListener('orientationchange', checkMobile);
+    window.removeEventListener('load', checkMobile);
+  };
+}, []);
 
   // Control táctil - Girar izquierda
   const handleTouchLeft = () => {

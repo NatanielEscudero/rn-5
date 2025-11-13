@@ -526,125 +526,74 @@ html, body {
     margin-top: 10px;
   }
 }
-/* Controles táctiles mejorados */
+/* CONTROLES TÁCTILES MEJORADOS - GARANTIZADO */
 .touch-controls {
-  position: fixed; /* Cambiado a fixed para mejor posicionamiento */
-  bottom: 30px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 25px;
-  z-index: 1000; /* Z-index más alto */
-  pointer-events: none;
-  box-sizing: border-box;
+  position: fixed !important;
+  bottom: 30px !important;
+  left: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 0 25px !important;
+  z-index: 10000 !important;
+  pointer-events: none !important;
+  box-sizing: border-box !important;
 }
 
 .touch-btn {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  border: 3px solid #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #000000;
-  cursor: pointer;
-  user-select: none;
-  pointer-events: auto;
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 3px solid #000000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 2rem !important;
+  font-weight: bold !important;
+  color: #000000 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  pointer-events: auto !important;
   box-shadow: 
     0 4px 15px rgba(0, 0, 0, 0.3),
-    inset 0 2px 5px rgba(255, 255, 255, 0.8);
-  transition: all 0.1s ease;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+    inset 0 2px 5px rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.1s ease !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 .touch-btn:active {
-  transform: scale(0.85);
-  background: rgba(200, 200, 200, 0.95);
+  transform: scale(0.85) !important;
+  background: rgba(200, 200, 200, 0.95) !important;
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-.touch-btn.left::after {
-  content: "←";
-  margin-right: 3px; /* Compensación visual */
-}
-
-.touch-btn.right::after {
-  content: "→";
-  margin-left: 3px; /* Compensación visual */
-}
-
-/* Siempre mostrar en móviles - eliminar el display: none */
-@media (max-width: 768px) {
-  .touch-controls {
-    display: flex !important; /* Forzar display */
-  }
-  
-  .touch-btn {
-    width: 75px;
-    height: 75px;
-    font-size: 1.8rem;
-  }
-}
-
-/* Tabletas pequeñas */
-@media (max-width: 1024px) and (min-width: 769px) {
-  .touch-controls {
-    display: flex !important;
-    bottom: 40px;
-  }
-  
-  .touch-btn {
-    width: 85px;
-    height: 85px;
-    font-size: 2.2rem;
-  }
-}
-
-/* Móviles pequeños */
+/* RESPONSIVE */
 @media (max-width: 480px) {
   .touch-controls {
-    bottom: 20px;
-    padding: 0 20px;
+    bottom: 20px !important;
+    padding: 0 20px !important;
   }
   
   .touch-btn {
-    width: 65px;
-    height: 65px;
-    font-size: 1.6rem;
+    width: 70px !important;
+    height: 70px !important;
+    font-size: 1.8rem !important;
   }
 }
 
-/* Orientación horizontal */
 @media (max-height: 500px) and (orientation: landscape) {
   .touch-controls {
-    bottom: 15px;
-    padding: 0 15px;
+    bottom: 15px !important;
+    padding: 0 15px !important;
   }
   
   .touch-btn {
-    width: 55px;
-    height: 55px;
-    font-size: 1.4rem;
-  }
-}
-
-/* Para dispositivos muy altos */
-@media (min-height: 1000px) {
-  .touch-controls {
-    bottom: 50px;
-  }
-  
-  .touch-btn {
-    width: 90px;
-    height: 90px;
-    font-size: 2.5rem;
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 1.6rem !important;
   }
 }
