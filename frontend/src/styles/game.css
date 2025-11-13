@@ -22,6 +22,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: clamp(5px, 2vw, 20px);
 }
 
 /* CONTENEDOR DEL FONDO DE AGUA - SOLO DETRÁS DEL CANVAS */
@@ -30,8 +31,8 @@ html, body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 95vmin;
-  height: 90vmin;
+  width: clamp(300px, 95vmin, 1200px);
+  height: clamp(400px, 90vmin, 800px);
   max-width: 95%;
   max-height: 90%;
   z-index: 0;
@@ -52,8 +53,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 95vmin;
-  height: 90vmin;
+  width: clamp(300px, 95vmin, 1200px);
+  height: clamp(400px, 90vmin, 800px);
   max-width: 95%;
   max-height: 90%;
   z-index: 1;
@@ -65,7 +66,7 @@ html, body {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border: 2px solid #00ff00;
+  border: clamp(1px, 0.3vw, 2px) solid #00ff00;
   border-radius: 8px;
   z-index: 2;
 }
@@ -73,32 +74,32 @@ html, body {
 /* UI del juego */
 .game-ui {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: clamp(10px, 3vw, 20px);
+  left: clamp(10px, 3vw, 20px);
   z-index: 10;
 }
 
 .score {
-  font-size: 1.4rem;
+  font-size: clamp(1rem, 3vw, 1.4rem);
   color: #00ff00;
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.5rem, 2vw, 1rem);
   text-shadow: 2px 2px 0 #000;
   font-weight: bold;
   background: rgba(0, 0, 0, 0.7);
-  padding: 0.5rem 1rem;
+  padding: clamp(0.3rem, 1.5vw, 0.5rem) clamp(0.5rem, 2vw, 1rem);
   border-radius: 5px;
   border: 1px solid #00ff00;
 }
 
 .enemy-indicators {
-  margin-top: 1rem;
+  margin-top: clamp(0.5rem, 2vw, 1rem);
 }
 
 .enemy-indicator {
-  padding: 5px 10px;
-  margin: 5px 0;
+  padding: clamp(3px, 1vw, 5px) clamp(5px, 2vw, 10px);
+  margin: clamp(3px, 1vw, 5px) 0;
   border-radius: 5px;
-  font-size: 0.9rem;
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
   font-weight: bold;
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid;
@@ -121,10 +122,10 @@ html, body {
 
 /* Indicadores de escudo */
 .shield-indicator {
-  padding: 6px 12px;
-  margin: 4px 0;
+  padding: clamp(4px, 1.5vw, 6px) clamp(6px, 2.5vw, 12px);
+  margin: clamp(3px, 1vw, 4px) 0;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: clamp(0.7rem, 2vw, 0.85rem);
   font-weight: bold;
   background: rgba(0, 0, 0, 0.8);
 }
@@ -156,17 +157,17 @@ html, body {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  padding: 8px 16px;
-  margin: 5px 0;
+  padding: clamp(6px, 1.5vw, 8px) clamp(10px, 3vw, 16px);
+  margin: clamp(3px, 1vw, 5px) 0;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
   font-weight: bold;
   text-align: center;
   animation: slideDown 0.3s ease-out, fadeOut 0.5s ease-in 2s forwards;
   background: rgba(0, 0, 0, 0.9);
-  border: 2px solid;
+  border: clamp(1px, 0.4vw, 2px) solid;
   text-shadow: 2px 2px 0 #000;
-  max-width: 300px;
+  max-width: clamp(200px, 80vw, 300px);
 }
 
 .notification-top.warning {
@@ -196,27 +197,29 @@ html, body {
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  padding: clamp(10px, 3vw, 20px);
 }
 
 .game-over-content {
   background: rgba(0, 0, 0, 0.95);
-  padding: 3rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
   border-radius: 10px;
-  border: 2px solid #ff0000;
+  border: clamp(1px, 0.4vw, 2px) solid #ff0000;
   text-align: center;
-  min-width: 300px;
-  max-width: 90%;
+  min-width: min(300px, 90vw);
+  max-width: min(500px, 95vw);
+  width: 100%;
 }
 
 .game-over-content h2 {
   color: #ff0000;
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  font-size: clamp(1.5rem, 4vw, 2rem);
 }
 
 .game-over-content p {
-  font-size: 1.3rem;
-  margin-bottom: 1.5rem;
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
   color: white;
 }
 
@@ -224,15 +227,17 @@ html, body {
 .retro-btn {
   background: #00ff00;
   color: #000;
-  border: 2px solid #000;
-  padding: 15px 30px;
+  border: clamp(1px, 0.4vw, 2px) solid #000;
+  padding: clamp(10px, 3vw, 15px) clamp(20px, 4vw, 30px);
   font-family: 'Courier New', monospace;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 3vw, 1.2rem);
   font-weight: bold;
   cursor: pointer;
-  margin: 10px;
+  margin: clamp(5px, 2vw, 10px);
   transition: all 0.3s ease;
   border-radius: 5px;
+  width: 100%;
+  max-width: 300px;
 }
 
 .retro-btn:hover {
@@ -246,28 +251,30 @@ html, body {
   z-index: 10;
   text-align: center;
   background: rgba(0, 0, 0, 0.9);
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
   border-radius: 10px;
-  border: 2px solid #00ff00;
-  max-width: 600px;
+  border: clamp(1px, 0.4vw, 2px) solid #00ff00;
+  max-width: min(600px, 95vw);
   margin: 0 auto;
+  width: 100%;
 }
 
 .game-start-screen h1 {
   color: #00ff00;
-  margin-bottom: 1.5rem;
-  font-size: 2.5rem;
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
 }
 
 .game-start-screen p {
-  margin: 0.5rem 0;
-  font-size: 1rem;
+  margin: clamp(0.3rem, 1vw, 0.5rem) 0;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
   color: #ffffff;
+  line-height: 1.4;
 }
 
 .user-game-info {
-  margin: 1rem 0;
-  padding: 1rem;
+  margin: clamp(0.5rem, 2vw, 1rem) 0;
+  padding: clamp(0.5rem, 2vw, 1rem);
   background: rgba(0, 0, 0, 0.6);
   border-radius: 5px;
   border: 1px solid #00ff00;
@@ -278,8 +285,8 @@ html, body {
 }
 
 .loading-status {
-  margin: 1rem 0;
-  padding: 1rem;
+  margin: clamp(0.5rem, 2vw, 1rem) 0;
+  padding: clamp(0.5rem, 2vw, 1rem);
   background: rgba(0, 0, 0, 0.6);
   border-radius: 5px;
   border: 1px solid #0088ff;
@@ -288,8 +295,8 @@ html, body {
 .start-screen-buttons {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 2rem;
+  gap: clamp(10px, 2vw, 15px);
+  margin-top: clamp(1rem, 3vw, 2rem);
   width: 100%;
   max-width: 300px;
   margin-left: auto;
@@ -298,43 +305,44 @@ html, body {
 
 .start-screen-buttons .retro-btn {
   width: 100%;
-  padding: 15px 25px;
-  font-size: 1.1rem;
+  padding: clamp(12px, 3vw, 15px) clamp(20px, 4vw, 25px);
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
 }
 
 /* Asegurar que los botones del game over funcionen bien */
 .game-over-buttons {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
+  gap: clamp(10px, 2vw, 15px);
+  margin-top: clamp(15px, 3vw, 20px);
   width: 100%;
+  align-items: center;
 }
 
 .play-again-btn {
   background: linear-gradient(145deg, #4caf50, #2e7d32) !important;
   color: white !important;
-  border: 2px solid #000 !important;
-  padding: 15px 25px !important;
-  font-size: 1.1rem !important;
+  border: clamp(1px, 0.4vw, 2px) solid #000 !important;
+  padding: clamp(12px, 3vw, 15px) clamp(20px, 4vw, 25px) !important;
+  font-size: clamp(1rem, 2.5vw, 1.1rem) !important;
   font-weight: bold !important;
 }
 
 .dashboard-btn {
   background: linear-gradient(145deg, #2196f3, #1976d2) !important;
   color: white !important;
-  border: 2px solid #000 !important;
-  padding: 15px 25px !important;
-  font-size: 1.1rem !important;
+  border: clamp(1px, 0.4vw, 2px) solid #000 !important;
+  padding: clamp(12px, 3vw, 15px) clamp(20px, 4vw, 25px) !important;
+  font-size: clamp(1rem, 2.5vw, 1.1rem) !important;
   font-weight: bold !important;
 }
 
 .back-btn {
   background: linear-gradient(145deg, #ff9800, #f57c00) !important;
   color: white !important;
-  border: 2px solid #000 !important;
-  padding: 15px 25px !important;
-  font-size: 1.1rem !important;
+  border: clamp(1px, 0.4vw, 2px) solid #000 !important;
+  padding: clamp(12px, 3vw, 15px) clamp(20px, 4vw, 25px) !important;
+  font-size: clamp(1rem, 2.5vw, 1.1rem) !important;
   font-weight: bold !important;
 }
 
@@ -361,67 +369,244 @@ html, body {
   50% { opacity: 0.7; }
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ----------------------
+   Media Queries Mejoradas
+-----------------------*/
+
+/* Tabletas */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .canvas-background-container,
+  .canvas-container {
+    width: 90vmin;
+    height: 85vmin;
+  }
+  
   .game-ui {
-    top: 10px;
-    left: 10px;
+    top: 15px;
+    left: 15px;
+  }
+  
+  .start-screen-buttons {
+    max-width: 350px;
+  }
+}
+
+/* Móviles en orientación horizontal */
+@media (max-height: 500px) and (orientation: landscape) {
+  .game-container {
+    padding: 5px;
+  }
+  
+  .canvas-background-container,
+  .canvas-container {
+    width: 95vmin;
+    height: 95vmin;
+    max-height: 95vh;
+  }
+  
+  .game-ui {
+    top: 5px;
+    left: 5px;
   }
   
   .score {
-    font-size: 1.1rem;
-    padding: 0.4rem 0.8rem;
-  }
-  
-  .enemy-indicator {
-    font-size: 0.8rem;
-    padding: 4px 8px;
-  }
-  
-  .shield-indicator {
-    font-size: 0.8rem;
-    padding: 4px 8px;
-  }
-  
-  .notification-top {
     font-size: 0.9rem;
-    padding: 6px 12px;
-    max-width: 250px;
+    padding: 0.3rem 0.6rem;
+    margin-bottom: 0.3rem;
   }
   
-  .game-over-content {
-    padding: 2rem;
+  .enemy-indicator,
+  .shield-indicator {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    margin: 2px 0;
   }
   
-  .game-over-content h2 {
-    font-size: 1.5rem;
+  .game-start-screen {
+    padding: 1rem;
+    max-width: 90vw;
   }
   
-  .game-over-content p {
-    font-size: 1.1rem;
+  .game-start-screen h1 {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
   }
   
-  .retro-btn {
-    padding: 12px 24px;
-    font-size: 1.1rem;
+  .start-screen-buttons {
+    margin-top: 1rem;
+    gap: 8px;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 360px) {
+  .game-container {
+    padding: 2px;
   }
   
   .canvas-background-container,
   .canvas-container {
     width: 98vmin;
+    height: 80vmin;
+  }
+  
+  .game-ui {
+    top: 5px;
+    left: 5px;
+  }
+  
+  .score {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.5rem;
+  }
+  
+  .notification-top {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+  
+  .game-over-content {
+    padding: 1rem;
+  }
+  
+  .game-over-content h2 {
+    font-size: 1.3rem;
+  }
+}
+
+/* Pantallas muy grandes */
+@media (min-width: 1440px) {
+  .canvas-background-container,
+  .canvas-container {
+    width: 80vmin;
     height: 85vmin;
   }
   
   .game-start-screen {
-    padding: 1.5rem;
-    margin: 1rem;
+    max-width: 700px;
+    padding: 3rem;
   }
   
   .game-start-screen h1 {
-    font-size: 2rem;
+    font-size: 3rem;
   }
   
   .game-start-screen p {
-    font-size: 0.9rem;
+    font-size: 1.2rem;
+  }
+}
+
+/* Mejoras de accesibilidad para touch */
+@media (hover: none) and (pointer: coarse) {
+  .retro-btn:hover {
+    transform: none;
+    background: #00ff00;
+  }
+  
+  .retro-btn:active {
+    background: #ffff00;
+    transform: scale(0.98);
+  }
+}
+
+/* Soporte para dispositivos con altura limitada */
+@media (max-height: 400px) {
+  .game-container {
+    align-items: flex-start;
+    padding-top: 10px;
+  }
+  
+  .canvas-background-container,
+  .canvas-container {
+    height: 95vmin;
+  }
+  
+  .game-start-screen,
+  .game-over-content {
+    margin-top: 10px;
+  }
+}
+
+/* Controles táctiles para móviles */
+.touch-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: none; /* Ocultos por defecto, se muestran solo en móviles */
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.touch-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 3px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.1s ease;
+  touch-action: manipulation;
+}
+
+.touch-btn:active {
+  transform: scale(0.9);
+  background: rgba(200, 200, 200, 0.9);
+}
+
+.touch-btn.left::after {
+  content: "←";
+}
+
+.touch-btn.right::after {
+  content: "→";
+}
+
+/* Mostrar controles solo en móviles */
+@media (max-width: 768px) {
+  .touch-controls {
+    display: flex;
+  }
+  
+  .touch-btn {
+    width: 70px;
+    height: 70px;
+    font-size: 1.5rem;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 480px) {
+  .touch-controls {
+    bottom: 10px;
+    padding: 0 15px;
+  }
+  
+  .touch-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
+  }
+}
+
+/* Orientación horizontal en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .touch-controls {
+    bottom: 5px;
+  }
+  
+  .touch-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.1rem;
   }
 }

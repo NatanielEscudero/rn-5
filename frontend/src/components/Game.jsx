@@ -1,46 +1,3 @@
-// src/components/Game.jsx
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/game.css';
-import { supabase } from '../config/supabase';
-import { supabaseGameService } from '../services/supabaseGameService';
-
-// Importar sistemas modularizados
-import { config, baseSpawnRates, canvasBaseSize } from '../utils/gameConfig';
-import { 
-  adjustSpawnRates, 
-  spawnIslands, 
-  spawnCannonIslands, 
-  spawnEnemies, 
-  spawnPlanes, 
-  spawnPowerUps 
-} from '../systems/spawnSystem';
-import { 
-  updateBoat, 
-  updateShield, 
-  updateDisabledEnemies, 
-  updateCannonIslands, 
-  updateEnemies, 
-  updatePlanes, 
-  updateBullets, 
-  updateBombs, 
-  updatePowerUps,
-  checkCollisions 
-} from '../systems/updateSystem';
-import { activatePowerUp } from '../systems/powerUpSystem';
-import { 
-  drawNormalIsland, 
-  drawCannonIsland, 
-  drawEnemyBoat, 
-  drawPlane, 
-  drawPlayerBoat, 
-  drawPowerUp, 
-  drawShield, 
-  drawBoatTrail,
-  drawProjectiles 
-} from '../systems/renderSystem';
-import { loadAllImages } from '../utils/imageLoader';
-
 const Game = () => {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
@@ -54,11 +11,46 @@ const Game = () => {
     height: canvasBaseSize.height 
   });
   const [user, setUser] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // 🔊 SFX disparo y música de fondo
   const cannonSfxRef = useRef(null);
   const bgMusicRef = useRef(null);
 
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
+  // Control táctil - Girar izquierda
+  const handleTouchLeft = () => {
+    const state = gameState.current;
+    state.keys.left = true;
+    state.keys.right = false;
+  };
+
+  // Control táctil - Girar derecha  
+  const handleTouchRight = () => {
+    const state = gameState.current;
+    state.keys.right = true;
+    state.keys.left = false;
+  };
+
+  // Liberar controles táctiles
+  const handleTouchEnd = () => {
+    const state = gameState.current;
+    state.keys.left = false;
+    state.keys.right = false;
+  };
   // Obtener usuario al cargar
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -557,7 +549,7 @@ const Game = () => {
     );
   }
 
-  return (
+return (
     <div className="game-container">
       {/* FONDO DE AGUA ANIMADO SOLO EN EL CONTENEDOR DEL CANVAS */}
       <div className="canvas-background-container">
@@ -616,6 +608,28 @@ const Game = () => {
           tabIndex="0"
         />
       </div>
+
+      {/* Controles táctiles para móviles */}
+      {isMobile && gameStarted && !gameOver && (
+        <div className="touch-controls">
+          <div 
+            className="touch-btn left"
+            onTouchStart={handleTouchLeft}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleTouchLeft}
+            onMouseUp={handleTouchEnd}
+            onMouseLeave={handleTouchEnd}
+          />
+          <div 
+            className="touch-btn right"
+            onTouchStart={handleTouchRight}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleTouchRight}
+            onMouseUp={handleTouchEnd}
+            onMouseLeave={handleTouchEnd}
+          />
+        </div>
+      )}
 
       {/* Modal de Game Over */}
       {gameOver && (

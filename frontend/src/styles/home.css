@@ -4,12 +4,14 @@
 .register-container {
   position: relative;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh; /* Cambiado a min-height para mejor responsividad */
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: "Press Start 2P", cursive;
   overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 /* Wrapper idéntico para Login y Register */
@@ -17,10 +19,13 @@
 .register-form-wrapper,
 .home-content {
   z-index: 2;
-  padding: 40px 30px;
+  padding: clamp(20px, 5vw, 40px) clamp(15px, 4vw, 30px); /* Padding responsivo */
   border-radius: 12px;
   text-align: center;
   animation: fadeIn 1.5s ease-in-out;
+  width: 100%;
+  max-width: 500px; /* Máximo ancho para pantallas grandes */
+  box-sizing: border-box;
 }
 
 /* Títulos */
@@ -29,39 +34,43 @@
 .home-content h1 {
   color: #fff;
   margin-bottom: 20px;
-  font-size: 16px;
+  font-size: clamp(12px, 4vw, 16px); /* Tamaño fluido */
   text-shadow: 2px 2px 0px #000;
+  line-height: 1.4;
 }
 
 /* Inputs retro */
 .login-form input,
 .register-form input {
-  width: 300px;   /* 👈 ancho fijo */
-  max-width: 90%; /* 👈 para que en móviles no se corte */
+  width: 100%; /* Cambiado a 100% para mejor responsividad */
+  max-width: 300px; /* Mantiene el máximo original */
   padding: 12px 15px;
   margin-bottom: 20px;
   border: 2px solid #000;
   border-radius: 6px;
   font-family: "Press Start 2P", cursive;
-  font-size: 12px;
+  font-size: clamp(10px, 3vw, 12px); /* Tamaño fluido */
   background: #f0f0f0;
   box-shadow: 3px 3px 0px #000;
   outline: none;
+  box-sizing: border-box;
 }
-
 
 /* Botones retro */
 .retro-btn {
   font-family: "Press Start 2P", cursive;
-  font-size: 12px;
+  font-size: clamp(10px, 3vw, 12px); /* Tamaño fluido */
   text-transform: uppercase;
-  padding: 12px 25px;
+  padding: clamp(10px, 3vw, 12px) clamp(15px, 4vw, 25px); /* Padding fluido */
   border: none;
   border-radius: 6px;
   box-shadow: 3px 3px 0px #000;
   cursor: pointer;
   margin: 10px 5px;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
+  width: 100%;
+  max-width: 300px; /* Máximo ancho consistente con inputs */
+  box-sizing: border-box;
 }
 
 .retro-btn:hover {
@@ -81,6 +90,7 @@
   border-radius: 5px;
   text-align: center;
   font-weight: bold;
+  font-size: clamp(10px, 2.5vw, 12px); /* Tamaño fluido */
 }
 
 .message.success {
@@ -102,7 +112,8 @@
 
 .login-link p {
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: clamp(10px, 2.5vw, 14px); /* Tamaño fluido */
+  line-height: 1.4;
 }
 
 .login-link span {
@@ -139,6 +150,7 @@
   flex-direction: column;
   gap: 15px;
   align-items: center;
+  width: 100%;
 }
 
 /* Animación fadeIn */
@@ -152,6 +164,123 @@
 .register-form p {
   color: #fff;
   margin-top: 10px;
-  font-size: 12px;
+  font-size: clamp(10px, 2.5vw, 12px); /* Tamaño fluido */
   text-shadow: 1px 1px 2px #000;
+  line-height: 1.4;
+}
+
+/* ----------------------
+   Media Queries específicas
+-----------------------*/
+
+/* Tabletas */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .login-form-wrapper,
+  .register-form-wrapper,
+  .home-content {
+    max-width: 450px;
+    padding: 30px 25px;
+  }
+  
+  .form-buttons {
+    gap: 20px;
+  }
+}
+
+/* Pantallas grandes */
+@media (min-width: 1025px) {
+  .login-form-wrapper,
+  .register-form-wrapper,
+  .home-content {
+    max-width: 500px;
+    padding: 40px 35px;
+  }
+  
+  .form-buttons {
+    gap: 25px;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 360px) {
+  .home-container,
+  .login-container,
+  .register-container {
+    padding: 10px;
+  }
+  
+  .login-form-wrapper,
+  .register-form-wrapper,
+  .home-content {
+    padding: 15px 10px;
+  }
+  
+  .login-form input,
+  .register-form input {
+    padding: 10px 12px;
+    margin-bottom: 15px;
+  }
+  
+  .retro-btn {
+    padding: 10px 15px;
+    margin: 8px 3px;
+  }
+}
+
+/* Orientación horizontal en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .home-container,
+  .login-container,
+  .register-container {
+    min-height: auto;
+    padding: 10px 0;
+    align-items: flex-start;
+  }
+  
+  .login-form-wrapper,
+  .register-form-wrapper,
+  .home-content {
+    padding: 20px 15px;
+    margin: 20px 0;
+  }
+  
+  .login-form input,
+  .register-form input {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+  }
+  
+  .form-buttons {
+    gap: 10px;
+  }
+}
+
+/* Pantallas muy grandes */
+@media (min-width: 1440px) {
+  .login-form-wrapper,
+  .register-form-wrapper,
+  .home-content {
+    max-width: 550px;
+    padding: 50px 40px;
+  }
+  
+  .login-form h2,
+  .register-form h2,
+  .home-content h1 {
+    font-size: 18px;
+    margin-bottom: 25px;
+  }
+  
+  .login-form input,
+  .register-form input {
+    max-width: 350px;
+    padding: 15px 18px;
+    font-size: 14px;
+  }
+  
+  .retro-btn {
+    max-width: 350px;
+    padding: 15px 30px;
+    font-size: 14px;
+  }
 }
