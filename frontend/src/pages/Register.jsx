@@ -221,15 +221,6 @@ export default function Register() {
             
             <button
               type="button"
-              className="retro-btn google-btn"
-              onClick={handleGoogleRegister}
-              disabled={loading}
-            >
-              🔐 Google
-            </button>
-            
-            <button
-              type="button"
               className="retro-btn back-btn"
               onClick={() => navigate("/")}
               disabled={loading}
