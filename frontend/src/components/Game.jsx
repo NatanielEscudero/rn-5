@@ -6,7 +6,7 @@ import { supabase } from '../config/supabase';
 import { supabaseGameService } from '../services/supabaseGameService';
 
 // Importar sistemas modularizados
-import { config, baseSpawnRates, canvasBaseSize } from '../utils/gameConfig';
+import { config, baseSpawnRates, canvasBaseSize, visualSizes } from '../utils/gameConfig';
 import { 
   adjustSpawnRates, 
   spawnIslands, 
@@ -39,6 +39,7 @@ import {
   drawBoatTrail,
   drawProjectiles 
 } from '../systems/renderSystem';
+import { drawHitboxes } from '../systems/renderSystem';
 import { loadAllImages } from '../utils/imageLoader';
 
 const Game = () => {
@@ -49,13 +50,19 @@ const Game = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [canvasSize, setCanvasSize] = useState({ 
+  // Canvas SIEMPRE es 1000x750, lo que cambia es la escala CSS
+  const [canvasSize] = useState({ 
     width: canvasBaseSize.width, 
     height: canvasBaseSize.height 
   });
+  const [canvasScale, setCanvasScale] = useState(1);
   const [user, setUser] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [scoreSaved, setScoreSaved] = useState(false); // ← NUEVO: controlar si ya se guardó el score
+  const [scoreSaved, setScoreSaved] = useState(false);
+  const [showHitboxes, setShowHitboxes] = useState(false);
+
+  // Ref para evitar guardar la puntuación dos veces en el mismo evento
+  const savingScoreRef = useRef(false);
 
   // 🔊 SFX disparo y música de fondo
   const cannonSfxRef = useRef(null);
@@ -217,8 +224,8 @@ useEffect(() => {
     boat: {
       x: canvasBaseSize.width / 2, 
       y: canvasBaseSize.height - 100, 
-      width: 50,
-      height: 75, 
+      width: visualSizes.playerBoat.width,
+      height: visualSizes.playerBoat.height, 
       angle: 0, 
       speed: 4,
       rotationSpeed: 4,
@@ -236,32 +243,32 @@ useEffect(() => {
     disabledEnemies: []
   });
 
-  // Ajustar tamaño del canvas
+  // Calcular escala responsiva del canvas (se mantiene 1000x750, solo se escala visualmente)
   useEffect(() => {
-    const updateCanvasSize = () => {
+    const updateCanvasScale = () => {
       const container = document.querySelector('.canvas-container');
       if (container) {
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
         
-        const targetHeight = Math.min(containerHeight * 0.9, canvasBaseSize.height);
-        const targetWidth = (targetHeight * canvasBaseSize.width) / canvasBaseSize.height;
+        // Calcular escala basada en aspecto ratio
+        const scaleByWidth = containerWidth / canvasBaseSize.width;
+        const scaleByHeight = containerHeight / canvasBaseSize.height;
         
-        const finalWidth = Math.min(targetWidth, containerWidth * 0.95);
-        const finalHeight = (finalWidth * canvasBaseSize.height) / canvasBaseSize.width;
+        // Usar la escala más pequeña para que quepa completo
+        const scale = Math.min(scaleByWidth, scaleByHeight, 1);
         
-        setCanvasSize({
-          width: finalWidth,
-          height: finalHeight
-        });
+        setCanvasScale(scale);
       }
     };
 
-    updateCanvasSize();
-    window.addEventListener('resize', updateCanvasSize);
+    updateCanvasScale();
+    window.addEventListener('resize', updateCanvasScale);
+    window.addEventListener('orientationchange', updateCanvasScale);
 
     return () => {
-      window.removeEventListener('resize', updateCanvasSize);
+      window.removeEventListener('resize', updateCanvasScale);
+      window.removeEventListener('orientationchange', updateCanvasScale);
     };
   }, []);
 
@@ -269,12 +276,21 @@ useEffect(() => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const state = gameState.current;
+      // evitar toggles si el foco está en un input/textarea
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
       switch(e.key) {
         case 'ArrowLeft':
           state.keys.left = true;
           break;
         case 'ArrowRight':
           state.keys.right = true;
+          break;
+        case 'h':
+        case 'H':
+          // alternar hitboxes
+          setShowHitboxes(s => !s);
           break;
         default:
           break;
@@ -304,28 +320,7 @@ useEffect(() => {
     };
   }, []);
 
-  // Función para guardar puntuación - MEJORADA
-  const saveScore = async (finalScore) => {
-    if (!user || scoreSaved) { // ← Evitar guardar múltiples veces
-      console.log('Usuario no autenticado o score ya guardado');
-      return;
-    }
-
-    try {
-      console.log('💾 Guardando puntuación:', finalScore);
-      await supabaseGameService.saveScore(user.id, {
-        score: finalScore,
-        duration: Math.floor(gameState.current.frameCount / 60),
-        gameName: 'esquiva_islas'
-      });
-      
-      setScoreSaved(true); // ← Marcar como guardado
-      addNotification('🏆 Puntuación guardada en el ranking', 'info');
-    } catch (error) {
-      console.error('Error guardando puntuación:', error);
-      addNotification('❌ Error guardando puntuación', 'danger');
-    }
-  };
+  
 
   // Game loop - CORREGIDO
   useEffect(() => {
@@ -334,6 +329,38 @@ useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
+
+    // Función para guardar puntuación (definida dentro del useEffect para evitar dependencias inestables)
+    const saveScore = async (finalScore) => {
+      if (!user) {
+        console.log('Usuario no autenticado, no se guarda puntuación');
+        return;
+      }
+
+      if (scoreSaved || savingScoreRef.current) {
+        console.log('Puntuación ya guardada o guardando actualmente');
+        return;
+      }
+
+      // marcar inmediatamente para evitar duplicados concurrentes
+      savingScoreRef.current = true;
+
+      try {
+        console.log('💾 Guardando puntuación:', finalScore);
+        await supabaseGameService.saveScore(user.id, {
+          score: finalScore,
+          duration: Math.floor(gameState.current.frameCount / 60),
+          gameName: 'esquiva_islas'
+        });
+        setScoreSaved(true);
+        addNotification('🏆 Puntuación guardada en el ranking', 'info');
+      } catch (error) {
+        console.error('Error guardando puntuación:', error);
+        addNotification('❌ Error guardando puntuación', 'danger');
+        // Permitir reintento si hubo error
+        savingScoreRef.current = false;
+      }
+    };
 
     // Mover checkEnemyUnlocks dentro del useEffect
     const checkEnemyUnlocks = () => {
@@ -439,6 +466,10 @@ useEffect(() => {
       drawPlayerBoat(ctx, state.boat);
       drawShield(ctx, state.boat);
       drawBoatTrail(ctx, state.boat);
+      // Overlay de debugging: hitboxes
+      if (showHitboxes) {
+        drawHitboxes(ctx, state);
+      }
     };
 
     const gameLoop = () => {
@@ -456,7 +487,7 @@ useEffect(() => {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameStarted, gameOver, score, canvasSize, user, scoreSaved]); // ← AGREGAR DEPENDENCIAS
+  }, [gameStarted, gameOver, score, canvasSize, user, scoreSaved, showHitboxes]); // ← AGREGAR DEPENDENCIAS
 
   const startGame = () => {
     if (!imagesLoaded) {
@@ -466,7 +497,7 @@ useEffect(() => {
 
     // 🔊 Crear/desbloquear SFX disparo (si todavía no existe)
     if (!cannonSfxRef.current) {
-      cannonSfxRef.current = new Audio("sounds/cannon.mp3");
+      cannonSfxRef.current = new Audio(`${process.env.PUBLIC_URL}/sounds/cannon.mp3`);
       cannonSfxRef.current.preload = "auto";
       cannonSfxRef.current.volume = 0.7;
 
@@ -489,7 +520,7 @@ useEffect(() => {
 
     // 🎵 Crear/desbloquear Música de fondo (loop)
     if (!bgMusicRef.current) {
-      bgMusicRef.current = new Audio("sounds/background.mp3");
+      bgMusicRef.current = new Audio(`${process.env.PUBLIC_URL}/sounds/background.mp3`);
       bgMusicRef.current.preload = "auto";
       bgMusicRef.current.loop = true;
       bgMusicRef.current.volume = 0.35;
@@ -525,6 +556,8 @@ useEffect(() => {
     setGameOver(false);
     setScore(0);
     setScoreSaved(false); // ← RESETEAR: permitir guardar score nuevamente
+  // Reiniciar flag de guardado atómico
+  savingScoreRef.current = false;
     setNotifications([]);
     
     // CORRECCIÓN: Actualizar las propiedades sin perder la referencia
@@ -674,7 +707,6 @@ useEffect(() => {
 
       <div className="game-ui">
         <div className="score">Puntuación: {score}</div>
-        
         <div className="enemy-indicators">
           {gameState.current.cannonIslandsUnlocked && (
             <div className="enemy-indicator cannon">Islas con Cañón</div>
@@ -701,10 +733,15 @@ useEffect(() => {
       <div className="canvas-container">
         <canvas
           ref={canvasRef}
-          width={canvasSize.width}
-          height={canvasSize.height}
+          width={canvasBaseSize.width}
+          height={canvasBaseSize.height}
           className="game-canvas"
           tabIndex="0"
+          style={{
+            transform: `scale(${canvasScale})`,
+            transformOrigin: 'top center',
+            imageRendering: 'pixelated'
+          }}
         />
       </div>
 

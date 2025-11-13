@@ -1,3 +1,16 @@
+:root {
+  --accent-blue: #3b82f6;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --muted-bg: rgba(0,0,0,0.65);
+  --font-retro: "Press Start 2P", cursive;
+  --touch-size: 48px;
+}
+
+/* Base reset */
+* { box-sizing: border-box; margin:0; padding:0; }
+html, body { width:100%; height:100%; }
+
 /* Contenedor principal */
 .home-container,
 .login-container,
@@ -8,10 +21,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: "Press Start 2P", cursive;
-  overflow: hidden;
-  padding: 20px;
-  box-sizing: border-box;
+  font-family: var(--font-retro);
+  overflow: auto;
+  padding: clamp(12px, 3vw, 28px);
 }
 
 /* Wrapper idéntico para Login y Register */
@@ -19,13 +31,12 @@
 .register-form-wrapper,
 .home-content {
   z-index: 2;
-  padding: clamp(20px, 5vw, 40px) clamp(15px, 4vw, 30px); /* Padding responsivo */
+  padding: clamp(18px, 4vw, 36px) clamp(14px, 3.5vw, 28px);
   border-radius: 12px;
   text-align: center;
-  animation: fadeIn 1.5s ease-in-out;
+  animation: fadeIn 1s ease-in-out;
   width: 100%;
-  max-width: 500px; /* Máximo ancho para pantallas grandes */
-  box-sizing: border-box;
+  max-width: 520px; /* Máximo ancho para pantallas grandes */
 }
 
 /* Títulos */
@@ -42,35 +53,35 @@
 /* Inputs retro */
 .login-form input,
 .register-form input {
-  width: 100%; /* Cambiado a 100% para mejor responsividad */
-  max-width: 300px; /* Mantiene el máximo original */
-  padding: 12px 15px;
-  margin-bottom: 20px;
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 16px;
   border: 2px solid #000;
   border-radius: 6px;
-  font-family: "Press Start 2P", cursive;
-  font-size: clamp(10px, 3vw, 12px); /* Tamaño fluido */
+  font-family: var(--font-retro);
+  font-size: clamp(12px, 3vw, 14px);
   background: #f0f0f0;
   box-shadow: 3px 3px 0px #000;
   outline: none;
-  box-sizing: border-box;
 }
+
+.login-form input:focus, .register-form input:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.18); }
 
 /* Botones retro */
 .retro-btn {
-  font-family: "Press Start 2P", cursive;
-  font-size: clamp(10px, 3vw, 12px); /* Tamaño fluido */
+  font-family: var(--font-retro);
+  font-size: clamp(12px, 3vw, 14px);
   text-transform: uppercase;
-  padding: clamp(10px, 3vw, 12px) clamp(15px, 4vw, 25px); /* Padding fluido */
+  padding: clamp(10px, 2.5vw, 14px) clamp(14px, 4vw, 24px);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow: 3px 3px 0px #000;
   cursor: pointer;
   margin: 10px 5px;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
   width: 100%;
-  max-width: 300px; /* Máximo ancho consistente con inputs */
-  box-sizing: border-box;
+  max-width: 320px;
+  min-height: var(--touch-size);
 }
 
 .retro-btn:hover {
@@ -87,10 +98,10 @@
 .message {
   padding: 10px;
   margin: 10px 0;
-  border-radius: 5px;
+  border-radius: 6px;
   text-align: center;
-  font-weight: bold;
-  font-size: clamp(10px, 2.5vw, 12px); /* Tamaño fluido */
+  font-weight: 700;
+  font-size: clamp(12px, 3vw, 14px);
 }
 
 .message.success {
@@ -201,29 +212,62 @@
   }
 }
 
-/* Móviles pequeños */
-@media (max-width: 360px) {
+/* Móviles pequeños (iPhone SE, Samsung A34 ~375px) */
+@media (max-width: 420px) {
   .home-container,
   .login-container,
   .register-container {
-    padding: 10px;
+    padding: 16px;
+    min-height: 100vh;
   }
-  
+
   .login-form-wrapper,
   .register-form-wrapper,
   .home-content {
-    padding: 15px 10px;
+    padding: 24px 16px;
+    max-width: 100%;
   }
-  
+
+  .login-form h2,
+  .register-form h2,
+  .home-content h1 {
+    font-size: clamp(16px, 4vw, 18px);
+    margin-bottom: 24px;
+  }
+
   .login-form input,
   .register-form input {
-    padding: 10px 12px;
-    margin-bottom: 15px;
+    padding: 14px 12px;
+    margin-bottom: 18px;
+    font-size: 16px;
   }
-  
+
   .retro-btn {
-    padding: 10px 15px;
-    margin: 8px 3px;
+    padding: clamp(12px, 3vw, 14px) clamp(16px, 4vw, 20px);
+    margin: 10px 0;
+    font-size: clamp(12px, 3vw, 14px);
+    width: 100%;
+  }
+
+  .form-buttons {
+    gap: 16px;
+  }
+
+  .login-form p,
+  .register-form p {
+    font-size: clamp(11px, 2.8vw, 13px);
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+
+  .login-link p {
+    font-size: clamp(11px, 2.8vw, 13px);
+  }
+
+  .message {
+    font-size: clamp(12px, 3vw, 14px);
+    padding: 12px;
+    margin: 12px 0;
   }
 }
 

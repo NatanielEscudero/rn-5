@@ -3,7 +3,7 @@ const loadImage = (src) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      console.log(`✅ Imagen cargada: ${src}`);
+      console.log(`✅ Imagen cargada: ${src} (${img.naturalWidth}x${img.naturalHeight})`);
       resolve(img);
     };
     img.onerror = (error) => {
@@ -23,6 +23,18 @@ const gameImages = {
   powerUp: null,
   bullet: null,
   bomb: null
+};
+
+// Objeto para almacenar dimensiones reales de las imágenes
+const imageSizes = {
+  playerBoat: { width: null, height: null },
+  normalIsland: { width: null, height: null },
+  cannonIsland: { width: null, height: null },
+  enemyBoat: { width: null, height: null },
+  plane: { width: null, height: null },
+  powerUp: { width: null, height: null },
+  bullet: { width: null, height: null },
+  bomb: { width: null, height: null }
 };
 
 const loadAllImages = async () => {
@@ -49,13 +61,25 @@ const loadAllImages = async () => {
 
     for (const image of imagesToLoad) {
       try {
-        gameImages[image.key] = await loadImage(image.src);
-        console.log(`✅ ${image.key} cargado correctamente`);
+        const loadedImg = await loadImage(image.src);
+        gameImages[image.key] = loadedImg;
+        
+        // Guardar dimensiones reales de la imagen
+        imageSizes[image.key] = {
+          width: loadedImg.naturalWidth,
+          height: loadedImg.naturalHeight
+        };
+        
+        console.log(`✅ ${image.key} cargado: ${imageSizes[image.key].width}x${imageSizes[image.key].height}px`);
       } catch (error) {
         console.error(`❌ Falló la carga de ${image.key}: ${image.src}`);
         // No rechazamos aquí, continuamos con las demás imágenes
       }
     }
+    
+    // Mostrar tabla de dimensiones para debug
+    console.log('📐 Dimensiones de imágenes cargadas:');
+    console.table(imageSizes);
     
     // Verificar cuántas imágenes se cargaron
     const loadedCount = Object.values(gameImages).filter(img => img !== null).length;
@@ -74,4 +98,4 @@ const loadAllImages = async () => {
   }
 };
 
-export { loadImage, gameImages, loadAllImages };
+export { loadImage, gameImages, imageSizes, loadAllImages };

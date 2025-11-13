@@ -1,5 +1,6 @@
 // src/systems/spawnSystem.js
 import { checkSpawnCollision } from '../utils/gameMath';
+import { visualSizes, hitboxSizes } from '../utils/gameConfig';
 
 export const adjustSpawnRates = (state) => {
   const baseRates = state.baseSpawnRates;
@@ -28,12 +29,14 @@ export const spawnIslands = (state, frameCount, canvasSize) => {
   if (!state.islands) state.islands = [];
   
   if (frameCount - state.lastIslandSpawn > spawnRate) {
-    const size = Math.random() * 60 + 40;
+    // Usar tamaño VISUAL estándar de isla normal
+    const width = visualSizes.normalIsland.width;
+    const height = visualSizes.normalIsland.height;
     const newIsland = {
-      x: Math.random() * (canvasSize.width - size),
-      y: -size,
-      width: size,
-      height: size,
+      x: Math.random() * (canvasSize.width - width),
+      y: -height,
+      width: width,
+      height: height,
       speed: 2 + Math.random() * 1,
       type: 'normal'
     };
@@ -59,12 +62,14 @@ export const spawnCannonIslands = (state, frameCount, canvasSize) => {
   if (!state.cannonIslands) state.cannonIslands = [];
   
   if (frameCount - state.lastCannonIslandSpawn > spawnRate) {
-    const size = Math.random() * 50 + 60;
+    // Usar tamaño VISUAL estándar de isla con cañón
+    const width = visualSizes.cannonIsland.width;
+    const height = visualSizes.cannonIsland.height;
     const newCannonIsland = {
-      x: Math.random() * (canvasSize.width - size),
-      y: -size,
-      width: size,
-      height: size,
+      x: Math.random() * (canvasSize.width - width),
+      y: -height,
+      width: width,
+      height: height,
       speed: 1.5 + Math.random() * 0.5,
       type: 'cannon',
       bulletCooldown: 0,
@@ -96,11 +101,14 @@ export const spawnEnemies = (state, frameCount, canvasSize, config) => {
       state.enemyBoats.length < config.maxEnemyBoats) {
     
     const spawnLeft = Math.random() > 0.5;
+    // Usar tamaño VISUAL estándar de barco enemigo
+    const width = visualSizes.enemyBoat.width;
+    const height = visualSizes.enemyBoat.height;
     const newEnemy = {
-      x: spawnLeft ? -50 : canvasSize.width + 50,
+      x: spawnLeft ? -width : canvasSize.width + width,
       y: Math.random() * (canvasSize.height - 200) + 100,
-      width: 35,
-      height: 50,
+      width: width,
+      height: height,
       speed: config.enemySpeed + Math.random() * 0.3,
       type: 'chaser',
       angle: 0
@@ -122,11 +130,15 @@ export const spawnPlanes = (state, frameCount, canvasSize) => {
   if (!state.enemyBoats) state.enemyBoats = [];
   
   if (frameCount - state.lastPlaneSpawn > spawnRate) {
+    // Usar tamaño VISUAL estándar de avión
+    const width = visualSizes.plane.width;
+    const height = visualSizes.plane.height;
     const newPlane = {
-      x: Math.random() * (canvasSize.width - 200) + 100,
-      y: -40,
-      width: 45,
-      height: 25,
+      x: Math.random() * (canvasSize.width - width) + width / 2,
+      // Aparecen desde abajo y suben hacia arriba
+      y: canvasSize.height + height,
+      width: width,
+      height: height,
       speed: 2.5 + Math.random() * 0.5,
       bombCooldown: 0,
       maxBombCooldown: 120,
@@ -142,8 +154,10 @@ export const spawnPlanes = (state, frameCount, canvasSize) => {
 
   state.planes = (state.planes || []).filter(plane => {
     if (!plane) return false;
-    plane.y += plane.speed;
-    return plane.y < canvasSize.height + 50;
+    // Suben (y disminuye)
+    plane.y -= plane.speed;
+    // Mantener mientras no hayan salido por arriba
+    return plane.y > -plane.height - 50;
   });
 };
 
@@ -157,11 +171,14 @@ export const spawnPowerUps = (state, frameCount, canvasSize) => {
     const powerUpTypes = ['shield', 'disableEnemies'];
     const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
     
+    // Usar tamaño VISUAL estándar de power-up
+    const width = visualSizes.powerUp.width;
+    const height = visualSizes.powerUp.height;
     const newPowerUp = {
-      x: Math.random() * (canvasSize.width - 30),
-      y: -30,
-      width: 30,
-      height: 30,
+      x: Math.random() * (canvasSize.width - width),
+      y: -height,
+      width: width,
+      height: height,
       speed: 2,
       type: type
     };

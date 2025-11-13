@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../config/supabase";
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from "../config/supabase"; // solo para resetPasswordForEmail
 import "../styles/home.css";
 
 export default function Login() {
@@ -10,64 +11,27 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const { signIn } = useAuth();
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     try {
-      // Usar autenticación nativa de Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password
-      });
+  const res = await signIn({ email: email.trim(), password });
+  if (res?.error) throw res.error;
 
-      if (error) {
-        throw error;
+      // Si signIn tuvo éxito, redirigimos al dashboard
+      setMessage('✅ ¡Inicio de sesión exitoso!');
+      setTimeout(() => navigate('/dashboard'), 700);
+
+    } catch (err) {
+      console.error('❌ Error en login:', err);
+      let errorMessage = err.message || 'Error en el inicio de sesión';
+      if (errorMessage.includes('Invalid login credentials')) {
+        errorMessage = 'Email o contraseña incorrectos';
       }
-
-      if (data.user) {
-        console.log("✅ Login exitoso:", data.user);
-        
-        // Obtener información adicional del usuario si es necesario
-        const { data: userProfile, error: profileError } = await supabase
-          .from('users')
-          .select('username')
-          .eq('id', data.user.id)
-          .single();
-
-        // Guardar información básica en localStorage (opcional)
-        const userData = {
-          id: data.user.id,
-          email: data.user.email,
-          username: userProfile?.username || data.user.email.split('@')[0]
-        };
-        localStorage.setItem('user', JSON.stringify(userData));
-
-        setMessage("✅ ¡Inicio de sesión exitoso!");
-        
-        // Redirigir después de un breve delay
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1000);
-      }
-
-    } catch (error) {
-      console.error('❌ Error en login:', error);
-      
-      // Mensajes de error más amigables
-      let errorMessage = "Error en el inicio de sesión";
-      
-      if (error.message.includes('Invalid login credentials')) {
-        errorMessage = "Email o contraseña incorrectos";
-      } else if (error.message.includes('Email not confirmed')) {
-        errorMessage = "Por favor confirma tu email antes de iniciar sesión";
-      } else if (error.message.includes('Too many requests')) {
-        errorMessage = "Demasiados intentos. Intenta más tarde";
-      } else {
-        errorMessage = error.message;
-      }
-      
       setMessage(`❌ ${errorMessage}`);
     } finally {
       setLoading(false);

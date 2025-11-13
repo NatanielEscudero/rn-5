@@ -1,8 +1,8 @@
 // src/components/Dashboard.jsx
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabaseGameService } from "../services/supabaseGameService";
-import { supabase } from "../config/supabase";
+import { useAuth } from '../hooks/useAuth';
 import "./../styles/Dashboard.css";
 
 export default function Dashboard() {
@@ -24,12 +24,12 @@ export default function Dashboard() {
     lastScores: []
   });
 
-  const fetchUserStats = async (userId = user?.id) => {
+  const fetchUserStats = useCallback(async (userId) => {
     try {
       setLoading(true);
       setError(null);
       setStatsLoaded(false);
-      
+
       if (!userId) {
         console.log('ℹ️ Sin userId, usando estadísticas por defecto');
         setUserStats(getDefaultStats());
@@ -40,10 +40,10 @@ export default function Dashboard() {
       console.log('📊 Cargando estadísticas para:', userId);
       const stats = await supabaseGameService.getUserStats(userId);
       console.log('✅ Estadísticas cargadas:', stats);
-      
+
       setUserStats(stats);
       setStatsLoaded(true);
-      
+
     } catch (err) {
       console.error('❌ Error cargando estadísticas:', err);
       setError(err.message || 'Error al cargar estadísticas');
@@ -52,162 +52,65 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Use the central AuthProvider: when `user` from context changes, fetch stats.
+  // This avoids duplicating auth initialization logic here and prevents races.
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
-    const initializeAuth = async () => {
+    const loadForUser = async () => {
       try {
-        if (!isMounted) return;
-        
         setLoading(true);
         setError(null);
-        
-        console.log('🔄 Inicializando autenticación...');
+        setStatsLoaded(false);
 
-        // PRIMERO: Intentar recuperar del localStorage como fallback rápido
-        const storedUser = localStorage.getItem('supabase_user');
-        if (storedUser && isMounted) {
-          const parsedUser = JSON.parse(storedUser);
-          console.log('📦 Usuario encontrado en localStorage:', parsedUser.email);
-          setUser(parsedUser);
-        }
-
-        // SEGUNDO: Verificar sesión con Supabase
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('❌ Error de sesión:', sessionError);
-          if (isMounted) {
-            setError('Error de conexión con el servidor');
-          }
-        }
-
-        if (session?.user && isMounted) {
-          console.log('✅ Sesión activa encontrada:', session.user.email);
-          setUser(session.user);
-          // Guardar en localStorage para recuperación rápida
-          localStorage.setItem('supabase_user', JSON.stringify({
-            id: session.user.id,
-            email: session.user.email,
-            username: session.user.user_metadata?.username
-          }));
-          await fetchUserStats(session.user.id);
-          return;
-        }
-        
-        // TERCERO: Intentar obtener usuario directamente
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) {
-          console.log('⚠️ Error obteniendo usuario:', userError);
-        }
-
-        if (user && isMounted) {
-          console.log('✅ Usuario obtenido:', user.email);
-          setUser(user);
-          localStorage.setItem('supabase_user', JSON.stringify({
-            id: user.id,
-            email: user.email,
-            username: user.user_metadata?.username
-          }));
-          await fetchUserStats(user.id);
-          return;
-        }
-        
-        // CUARTO: Si no hay usuario, limpiar estado
-        if (isMounted) {
-          console.log('👤 Modo invitado');
+        if (!authUser) {
+          // Guest
           setUser(null);
-          localStorage.removeItem('supabase_user');
+          setUserStats(getDefaultStats());
           setStatsLoaded(true);
+          return;
         }
-        
+
+        // Prefer direct id from authUser
+        const finalId = authUser.id || (authUser.user && authUser.user.id) || null;
+
+        if (!finalId) {
+          setUser(null);
+          setUserStats(getDefaultStats());
+          setStatsLoaded(true);
+          return;
+        }
+
+        setUser(authUser);
+        await fetchUserStats(finalId);
       } catch (err) {
-        console.error('❌ Error en inicialización de auth:', err);
-        if (isMounted) {
-          setError('Error inicializando autenticación');
-          // Intentar recuperar de localStorage como último recurso
-          const storedUser = localStorage.getItem('supabase_user');
-          if (storedUser) {
-            console.log('🆘 Recuperando usuario de localStorage...');
-            setUser(JSON.parse(storedUser));
-          }
-        }
+        console.error('❌ Error cargando datos del usuario en Dashboard:', err);
+        setError(err.message || 'Error al cargar datos');
+        setUserStats(getDefaultStats());
+        setStatsLoaded(true);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
-    initializeAuth();
+    loadForUser();
 
-    // Escuchar cambios de autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔐 Estado de auth cambiado:', event);
-        
-        if (!isMounted) return;
+    return () => { mounted = false; };
+  }, [authUser, fetchUserStats]);
 
-        switch (event) {
-          case 'SIGNED_IN':
-            console.log('✅ Usuario inició sesión:', session.user.email);
-            setUser(session.user);
-            localStorage.setItem('supabase_user', JSON.stringify({
-              id: session.user.id,
-              email: session.user.email,
-              username: session.user.user_metadata?.username
-            }));
-            await fetchUserStats(session.user.id);
-            break;
-
-          case 'SIGNED_OUT':
-            console.log('🚪 Usuario cerró sesión');
-            setUser(null);
-            setUserStats(getDefaultStats());
-            localStorage.removeItem('supabase_user');
-            setStatsLoaded(true);
-            break;
-
-          case 'USER_UPDATED':
-            console.log('📝 Usuario actualizado');
-            if (session?.user) {
-              setUser(session.user);
-              localStorage.setItem('supabase_user', JSON.stringify({
-                id: session.user.id,
-                email: session.user.email,
-                username: session.user.user_metadata?.username
-              }));
-            }
-            break;
-
-          case 'TOKEN_REFRESHED':
-            console.log('🔄 Token refrescado');
-            break;
-
-          default:
-            console.log('🔔 Evento de auth:', event);
-        }
-      }
-    );
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []); // Solo se ejecuta una vez al montar
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
+      const res = await signOut();
+      if (res?.error) throw res.error;
       console.log('✅ Logout exitoso');
-      // Los listeners de onAuthStateChange se encargarán de limpiar el estado
-      
+      // onAuthStateChange en el provider limpiará el estado
     } catch (err) {
       console.error('❌ Error durante logout:', err);
       setError('Error al cerrar sesión');
@@ -358,25 +261,6 @@ export default function Dashboard() {
               disabled={loading}
             >
               {loading ? '⏳ Actualizando...' : '🔄 Actualizar'}
-            </button>
-          )}
-
-          {/* Botón de debug para desarrollo */}
-          {process.env.NODE_ENV === 'development' && (
-            <button 
-              className="btn retro-btn debug-btn"
-              onClick={() => {
-                console.log('🔍 Debug Info:', {
-                  user,
-                  userStats,
-                  loading,
-                  statsLoaded,
-                  error,
-                  localStorage: localStorage.getItem('supabase_user')
-                });
-              }}
-            >
-              🐛 Debug
             </button>
           )}
         </div>

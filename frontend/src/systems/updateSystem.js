@@ -1,7 +1,8 @@
 // src/systems/updateSystem.js
-import { checkEnemyCollision, calculateAngle } from '../utils/gameMath';
+import { checkEnemyCollision, checkHitboxCollision } from '../utils/gameMath';
 import { checkRectCollision } from '../utils/gameMath';
 import { activateEmergencyShield } from './powerUpSystem';
+import { visualSizes, hitboxSizes } from '../utils/gameConfig';
 
 export const updateBoat = (state, canvasSize) => {
   const boat = state.boat;
@@ -83,13 +84,15 @@ export const updateCannonIslands = (state, boat, config) => {
     
     if (island.bulletCooldown <= 0 && distance < 300) {
       const angle = Math.atan2(boat.y - island.y, boat.x - island.x);
+      const bulletWidth = visualSizes.bullet.width;
+      const bulletHeight = visualSizes.bullet.height;
       state.bullets.push({
-        x: island.x + island.width / 2 - 4,
-        y: island.y + island.height / 2 - 4,
+        x: island.x + island.width / 2 - bulletWidth / 2,
+        y: island.y + island.height / 2 - bulletHeight / 2,
         vx: Math.cos(angle) * config.bulletSpeed,
         vy: Math.sin(angle) * config.bulletSpeed,
-        width: 8,
-        height: 8,
+        width: bulletWidth,
+        height: bulletHeight,
         type: 'cannon'
       });
       island.bulletCooldown = island.maxBulletCooldown;
@@ -111,7 +114,8 @@ export const updateEnemies = (state, boat, canvasSize) => {
     const dy = boat.y - enemy.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     
-    enemy.angle = calculateAngle(enemy.x, enemy.y, boat.x, boat.y);
+  // Mantener los barcos enemigos mirando siempre hacia arriba (orientación fija)
+  enemy.angle = -90; // apunta hacia arriba en grados
     
     const prevX = enemy.x;
     const prevY = enemy.y;
@@ -168,16 +172,18 @@ export const updatePlanes = (state, boat, config) => {
   
   state.planes.forEach((plane) => {
     if (!plane) return;
-    
-    plane.y += plane.speed;
+    // Aviones suben desde abajo hacia arriba
+    plane.y -= plane.speed;
     
     plane.bombCooldown--;
     if (plane.bombCooldown <= 0 && Math.abs(plane.x - boat.x) < 150) {
+      const bombWidth = visualSizes.bomb.width;
+      const bombHeight = visualSizes.bomb.height;
       state.bombs.push({
-        x: plane.x + plane.width / 2 - 6,
+        x: plane.x + plane.width / 2 - bombWidth / 2,
         y: plane.y + plane.height,
-        width: 12,
-        height: 12,
+        width: bombWidth,
+        height: bombHeight,
         speed: config.bombSpeed,
         type: 'plane'
       });
@@ -185,7 +191,8 @@ export const updatePlanes = (state, boat, config) => {
     }
   });
 
-  state.planes = state.planes.filter(plane => plane && plane.y < 650);
+  // Filtrar aviones que ya salieron por arriba
+  state.planes = state.planes.filter(plane => plane && plane.y > -plane.height - 50);
 };
 
 export const updateBullets = (state, canvasSize) => {
@@ -220,7 +227,8 @@ export const updatePowerUps = (state, boat) => {
   
   state.powerUps = state.powerUps.filter(powerUp => {
     if (!powerUp) return false;
-    if (checkRectCollision(boat, powerUp)) {
+    // Usar hitbox para detectar power-ups
+    if (checkHitboxCollision({ ...boat, type: 'playerBoat' }, { ...powerUp, type: 'powerUp' })) {
       activatedPowerUps.push(powerUp.type);
       return false;
     }
@@ -238,7 +246,7 @@ export const checkCollisions = (state, config, addNotification) => {
   if (!boat.isInvulnerable) {
     // Verificar colisión con islas
     for (let island of [...(state.islands || []), ...(state.cannonIslands || [])]) {
-      if (island && checkRectCollision(boat, island)) {
+      if (island && checkHitboxCollision({ ...boat, type: 'playerBoat' }, { ...island, type: island.type === 'cannon' ? 'cannonIsland' : 'normalIsland' })) {
         const shieldNotification = activateEmergencyShield(state, config);
         if (shieldNotification) {
           addNotification(shieldNotification, 'info');
@@ -251,7 +259,7 @@ export const checkCollisions = (state, config, addNotification) => {
 
     // Verificar colisión con barcos enemigos
     for (let enemy of (state.enemyBoats || [])) {
-      if (enemy && checkRectCollision(boat, enemy)) {
+      if (enemy && checkHitboxCollision({ ...boat, type: 'playerBoat' }, { ...enemy, type: 'enemyBoat' })) {
         const shieldNotification = activateEmergencyShield(state, config);
         if (shieldNotification) {
           addNotification(shieldNotification, 'info');
@@ -264,7 +272,7 @@ export const checkCollisions = (state, config, addNotification) => {
 
     // Verificar colisión con balas
     for (let bullet of (state.bullets || [])) {
-      if (bullet && checkRectCollision(boat, bullet)) {
+      if (bullet && checkHitboxCollision({ ...boat, type: 'playerBoat' }, { ...bullet, type: 'bullet' })) {
         const shieldNotification = activateEmergencyShield(state, config);
         if (shieldNotification) {
           addNotification(shieldNotification, 'info');
@@ -277,7 +285,7 @@ export const checkCollisions = (state, config, addNotification) => {
 
     // Verificar colisión con bombas
     for (let bomb of (state.bombs || [])) {
-      if (bomb && checkRectCollision(boat, bomb)) {
+      if (bomb && checkHitboxCollision({ ...boat, type: 'playerBoat' }, { ...bomb, type: 'bomb' })) {
         const shieldNotification = activateEmergencyShield(state, config);
         if (shieldNotification) {
           addNotification(shieldNotification, 'info');

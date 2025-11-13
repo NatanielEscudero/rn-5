@@ -1,5 +1,6 @@
 // src/systems/renderSystem.js
 import { gameImages } from '../utils/imageLoader';
+import { hitboxSizes } from '../utils/gameConfig';
 
 // Agrega al inicio del renderSystem.js
 let debugLogged = false;
@@ -282,4 +283,112 @@ export const drawProjectiles = (ctx, bullets, bombs) => {
       ctx.fillRect(bomb.x, bomb.y, bomb.width, bomb.height);
     }
   });
+};
+
+// Dibuja hitboxes para debugging
+export const drawHitboxes = (ctx, state) => {
+  if (!state) return;
+
+  const drawRect = (x, y, w, h, color = 'rgba(255,0,0,0.25)') => {
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+    try {
+      ctx.strokeStyle = String(color).replace(/,\s*([0-9]*\.?[0-9]+)\)$/, ', 1)');
+    } catch (e) {
+      ctx.strokeStyle = 'rgba(255,0,0,1)';
+    }
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, w, h);
+    ctx.restore();
+  };
+
+  const drawRotatedRect = (obj, hDef, color = 'rgba(255,0,0,0.25)') => {
+    // obj: has x,y,width,height,angle (degrees)
+    // hDef: { width, height, offsetX, offsetY }
+    const angle = (obj.angle || 0) * Math.PI / 180;
+    const cx = obj.x + obj.width / 2;
+    const cy = obj.y + obj.height / 2;
+    const offX = hDef.offsetX || 0;
+    const offY = hDef.offsetY || 0;
+    const w = hDef.width || obj.width;
+    const h = hDef.height || obj.height;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.fillStyle = color;
+    // draw relative to centered coordinate system
+    ctx.fillRect(-obj.width / 2 + offX, -obj.height / 2 + offY, w, h);
+    try {
+      ctx.strokeStyle = String(color).replace(/,\s*([0-9]*\.?[0-9]+)\)$/, ', 1)');
+    } catch (e) {
+      ctx.strokeStyle = 'rgba(255,0,0,1)';
+    }
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-obj.width / 2 + offX, -obj.height / 2 + offY, w, h);
+    ctx.restore();
+  };
+
+  // Helper to compute hitbox rect from visual object and type
+  const getHitboxRect = (obj, type) => {
+    const h = hitboxSizes[type] || { width: obj.width, height: obj.height, offsetX: 0, offsetY: 0 };
+    const x = obj.x + (h.offsetX || 0);
+    const y = obj.y + (h.offsetY || 0);
+    return { x, y, width: h.width || obj.width, height: h.height || obj.height };
+  };
+
+  // Player
+  try {
+    const boat = state.boat;
+    if (boat) {
+      const hDef = hitboxSizes['playerBoat'] || { width: boat.width, height: boat.height, offsetX: 0, offsetY: 0 };
+      // Dibujar rectángulo rotado para que siga la orientación del barco
+      drawRotatedRect(boat, hDef, 'rgba(0,255,255,0.18)');
+    }
+
+    // Islands
+    (state.islands || []).forEach(island => {
+      const r = getHitboxRect(island, 'normalIsland');
+      drawRect(r.x, r.y, r.width, r.height, 'rgba(0,200,0,0.18)');
+    });
+
+    (state.cannonIslands || []).forEach(island => {
+      const r = getHitboxRect(island, 'cannonIsland');
+      drawRect(r.x, r.y, r.width, r.height, 'rgba(200,100,0,0.18)');
+    });
+
+    // Enemy boats
+    (state.enemyBoats || []).forEach(enemy => {
+      const hDef = hitboxSizes['enemyBoat'] || { width: enemy.width, height: enemy.height, offsetX: 0, offsetY: 0 };
+      drawRotatedRect(enemy, hDef, 'rgba(255,0,0,0.18)');
+    });
+
+    // Planes
+    (state.planes || []).forEach(plane => {
+      const r = getHitboxRect(plane, 'plane');
+      drawRect(r.x, r.y, r.width, r.height, 'rgba(255,128,0,0.18)');
+    });
+
+    // Power-ups
+    (state.powerUps || []).forEach(p => {
+      const r = getHitboxRect(p, 'powerUp');
+      drawRect(r.x, r.y, r.width, r.height, 'rgba(0,0,255,0.12)');
+    });
+
+    // Bullets
+    (state.bullets || []).forEach(b => {
+      const r = getHitboxRect(b, 'bullet');
+      drawRect(r.x, r.y, r.width, r.height, 'rgba(255,255,0,0.18)');
+    });
+
+    // Bombs
+    (state.bombs || []).forEach(b => {
+      const r = getHitboxRect(b, 'bomb');
+      drawRect(r.x, r.y, r.width, r.height, 'rgba(255,64,0,0.18)');
+    });
+  } catch (e) {
+    // No bloquear render si algo falla
+    console.warn('drawHitboxes error', e);
+  }
 };

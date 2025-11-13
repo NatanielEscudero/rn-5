@@ -1,14 +1,21 @@
-/* src/styles/Statistics.css */
+:root{
+  --primary: #2196f3;
+  --muted: #666666;
+  --white: #ffffff;
+  --touch-size: 48px;
+}
+
+*{ box-sizing: border-box; margin:0; padding:0 }
+
 .statistics-container {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  overflow: hidden;
+  overflow: auto;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: clamp(10px, 3vw, 20px) clamp(5px, 2vw, 10px);
-  box-sizing: border-box;
+  padding: clamp(10px, 3vw, 20px) clamp(8px, 2.5vw, 14px);
 }
 
 .statistics-background {
@@ -23,17 +30,16 @@
 }
 
 .statistics-content {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255,255,255,0.97);
   padding: clamp(1rem, 3vw, 2rem);
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  max-width: 1000px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  max-width: 1100px;
   width: 95%;
-  border: clamp(3px, 1vw, 5px) solid #4a90e2;
+  border: clamp(2px, 1vw, 4px) solid var(--primary);
   margin: clamp(10px, 3vw, 20px) 0;
-  max-height: 90vh;
+  max-height: 92vh;
   overflow-y: auto;
-  box-sizing: border-box;
 }
 
 /* Asegurar que el contenido sea scrollable */
@@ -70,27 +76,27 @@
 .scores-list-container {
   background: white;
   border-radius: 10px;
-  border: clamp(2px, 1vw, 3px) solid #333;
+  border: clamp(1px, 0.6vw, 2px) solid #ddd;
   overflow: hidden;
-  box-shadow: 3px 3px 0px #333;
-  max-height: 400px;
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
+  max-height: 60vh;
 }
 
 .scores-list-header {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: clamp(0.5rem, 2vw, 1rem);
+  gap: clamp(0.4rem, 1.5vw, 0.8rem);
   padding: clamp(0.8rem, 2vw, 1rem);
-  background: #4a90e2;
-  color: white;
-  font-weight: bold;
+  background: var(--primary);
+  color: var(--white);
+  font-weight: 700;
   position: sticky;
   top: 0;
   z-index: 10;
   flex-shrink: 0;
-  font-size: clamp(0.8rem, 2vw, 1rem);
+  font-size: clamp(0.85rem, 2vw, 1rem);
 }
 
 .scores-list {
@@ -102,10 +108,10 @@
 .score-item {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: clamp(0.5rem, 2vw, 1rem);
+  gap: clamp(0.4rem, 1.5vw, 0.8rem);
   padding: clamp(0.8rem, 2vw, 1rem);
-  border-bottom: 1px solid #eee;
-  transition: background-color 0.3s ease;
+  border-bottom: 1px solid #f1f1f1;
+  transition: background-color 0.18s ease;
   font-size: clamp(0.8rem, 2vw, 1rem);
 }
 
@@ -317,48 +323,115 @@
   }
 }
 
-/* Móviles pequeños */
-@media (max-width: 480px) {
+/* Móviles pequeños (iPhone SE, Samsung A34 ~375px) */
+@media (max-width: 420px) {
   .statistics-container {
-    padding: 5px;
+    padding: 12px 8px;
     align-items: center;
   }
-  
+
   .statistics-content {
-    width: 95%;
-    padding: 0.8rem;
-    margin: 5px;
+    width: 96%;
+    padding: 14px 12px;
+    margin: 8px 0;
     max-height: 95vh;
   }
-  
-  .scores-list-header,
-  .score-item {
-    grid-template-columns: 1fr;
-    text-align: center;
+
+  .statistics-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
   }
-  
-  .scores-list-header span:nth-child(2),
-  .score-item .score-date {
-    display: none;
+
+  .statistics-header h1 {
+    font-size: clamp(16px, 4vw, 18px);
   }
-  
+
+  .statistics-header p {
+    font-size: clamp(12px, 2.5vw, 13px);
+  }
+
   .summary-grid {
     grid-template-columns: 1fr;
-    gap: 0.8rem;
+    gap: 12px;
+    margin-bottom: 16px;
   }
-  
+
   .summary-card {
-    padding: 1rem;
+    padding: clamp(12px, 2.5vw, 14px);
   }
-  
-  .statistics-header h1 {
-    font-size: 1.3rem;
+
+  .summary-value {
+    font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+    margin-bottom: 6px;
   }
-  
-  .statistics-header p {
-    font-size: 0.8rem;
+
+  .summary-label {
+    font-size: clamp(11px, 2.5vw, 12px);
+  }
+
+  .scores-list-container {
+    max-height: 50vh;
+  }
+
+  .scores-list-header,
+  .score-item {
+    grid-template-columns: 1.5fr 1fr;
+    gap: clamp(0.4rem, 1vw, 0.6rem);
+    padding: clamp(10px, 2vw, 12px);
+    font-size: clamp(11px, 2.5vw, 12px);
+  }
+
+  .scores-list-header {
+    padding: clamp(10px, 2vw, 12px);
+    font-size: clamp(10px, 2.5vw, 11px);
+  }
+
+  .scores-list-header span:nth-child(3),
+  .scores-list-header span:nth-child(4),
+  .score-item .score-duration,
+  .score-item .score-game {
+    display: none;
+  }
+
+  .scores-footer {
+    padding: clamp(10px, 2vw, 12px);
+    font-size: clamp(10px, 2.2vw, 11px);
+  }
+
+  .score-points {
+    font-size: clamp(12px, 2.5vw, 13px);
+  }
+
+  .statistics-buttons {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .no-scores {
+    padding: clamp(14px, 3vw, 16px);
+    border-radius: 8px;
+  }
+
+  .no-scores h3 {
+    font-size: clamp(13px, 3vw, 14px);
+    margin-bottom: 10px;
+  }
+
+  .guest-message {
+    padding: clamp(12px, 2.5vw, 14px);
+  }
+
+  .guest-message h3 {
+    font-size: clamp(13px, 3vw, 14px);
+  }
+
+  .guest-message p {
+    font-size: clamp(11px, 2.5vw, 12px);
   }
 }
+
+/* Móviles pequeños (anterior: 480px) */
 
 /* Orientación horizontal en móviles */
 @media (max-height: 600px) and (orientation: landscape) {

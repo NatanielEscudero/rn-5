@@ -1,11 +1,52 @@
 // src/utils/gameMath.js
 // Funciones matemáticas y de colisión
+import { hitboxSizes } from './gameConfig';
+
+// Obtener hitbox real basado en tamaño visual y tipo de objeto
+const getHitboxRect = (object) => {
+  if (!object || !object.type) return null;
+  
+  // Obtener hitbox específico para el tipo de objeto
+  const hitbox = hitboxSizes[object.type] || null;
+  
+  if (!hitbox) {
+    // Si no hay hitbox específico, usar el objeto completo
+    return {
+      x: object.x,
+      y: object.y,
+      width: object.width,
+      height: object.height
+    };
+  }
+  
+  // Calcular posición de hitbox dentro del objeto visual
+  const offsetX = hitbox.offsetX || 0;
+  const offsetY = hitbox.offsetY || 0;
+  
+  return {
+    x: object.x + offsetX,
+    y: object.y + offsetY,
+    width: hitbox.width,
+    height: hitbox.height
+  };
+};
+
 export const checkRectCollision = (rect1, rect2) => {
   if (!rect1 || !rect2) return false;
   return rect1.x < rect2.x + rect2.width &&
          rect1.x + rect1.width > rect2.x &&
          rect1.y < rect2.y + rect2.height &&
          rect1.y + rect1.height > rect2.y;
+};
+
+// Colisión usando hitbox
+export const checkHitboxCollision = (obj1, obj2) => {
+  const hitbox1 = getHitboxRect(obj1);
+  const hitbox2 = getHitboxRect(obj2);
+  
+  if (!hitbox1 || !hitbox2) return false;
+  
+  return checkRectCollision(hitbox1, hitbox2);
 };
 
 export const checkSpawnCollision = (newObject, existingObjects, margin = 20) => {
