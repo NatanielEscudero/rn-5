@@ -1,0 +1,173 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.pnp.cjs
+
+# testing
+/coverage
+
+# production
+/build
+/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# vercel
+.vercel
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Supabase local (si usas local development)
+.supabase/
+
+# Archivos de sistema
+Thumbs.db
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de configuración personalizados (si los tienes)
+config/local.json
+
+# Archivos de backup
+*.backup
+*.bak
+
+# Archivos de base de datos local (si usas alguna)
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de cache
+.cache/
+.parcel-cache/
+
+# Archivos de sistema operativo
+# macOS
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+[Tt]humbs.db
+
+# Windows
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+
+# Archivos de editor
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Sublime Text
+*.sublime-*
+
+# Archivos de Paquetes
+# Es mejor publicar los paquetes, excepto si estás haciendo un monorepo
+# node_modules/
+
+# Archivos de despliegue
+/.vercel
+/.netlify
+
+# Archivos de Storybook
+storybook-static/
+
+# Archivos de Cypress
+cypress/videos/
+cypress/screenshots/
+
+# Archivos de Playwright
+playwright-report/
+test-results/
+
+# Archivos de Selenium
+*.gz
+
+# Archivos de cache de webpack
+.webpack/
+
+# Archivos de cache de Parcel
+.parcel-cache/
+
+# Archivos de cache de Rollup
+.cache/
+
+# Archivos de cache de Turbo
+.turbo/
+
+# Archivos de cache de Next.js
+.next/
+
+# Archivos de cache de Nuxt
+.nuxt/
+
+# Archivos de cache de Gatsby
+.cache/
+public
+
+# Archivos de cache de Angular
+/.angular
+
+# Archivos de cache de Svelte
+.svelte-kit/
+
+# Archivos de cache de Quasar
+.quasar/
+
+# Archivos de cache de Stencil
+.stencil/
+
+# Archivos de cache de Docusaurus
+.docusaurus/
+
+# Archivos de cache de Eleventy
+.eleventy.js
+
+# Archivos de cache de Astro
+dist/
