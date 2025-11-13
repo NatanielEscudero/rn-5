@@ -55,22 +55,37 @@ const Game = () => {
   });
   const [user, setUser] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false); // ← NUEVO: controlar si ya se guardó el score
 
   // 🔊 SFX disparo y música de fondo
   const cannonSfxRef = useRef(null);
   const bgMusicRef = useRef(null);
 
-  // Detectar si es móvil
+  // Detectar si es móvil - MEJORADO
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768);
+      const mobileCheck = 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+        window.innerWidth <= 768 ||
+        (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+      
+      console.log('📱 Detección móvil:', {
+        userAgent: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+        width: window.innerWidth,
+        touchPoints: navigator.maxTouchPoints,
+        isMobile: mobileCheck
+      });
+      
+      setIsMobile(mobileCheck);
     };
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
+    window.addEventListener('orientationchange', checkMobile);
     
     return () => {
       window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('orientationchange', checkMobile);
     };
   }, []);
 
@@ -266,19 +281,22 @@ const Game = () => {
     };
   }, []);
 
-  // Función para guardar puntuación
+  // Función para guardar puntuación - MEJORADA
   const saveScore = async (finalScore) => {
-    if (!user) {
-      console.log('Usuario no autenticado, no se guarda la puntuación');
+    if (!user || scoreSaved) { // ← Evitar guardar múltiples veces
+      console.log('Usuario no autenticado o score ya guardado');
       return;
     }
 
     try {
+      console.log('💾 Guardando puntuación:', finalScore);
       await supabaseGameService.saveScore(user.id, {
         score: finalScore,
-        duration: Math.floor(gameState.current.frameCount / 60), // Convertir frames a segundos
+        duration: Math.floor(gameState.current.frameCount / 60),
         gameName: 'esquiva_islas'
       });
+      
+      setScoreSaved(true); // ← Marcar como guardado
       addNotification('🏆 Puntuación guardada en el ranking', 'info');
     } catch (error) {
       console.error('Error guardando puntuación:', error);
@@ -286,32 +304,33 @@ const Game = () => {
     }
   };
 
-  const checkEnemyUnlocks = () => {
-    const state = gameState.current;
-    
-    if (!state.cannonIslandsUnlocked && score >= config.cannonIslandSpawnScore) {
-      state.cannonIslandsUnlocked = true;
-      addNotification('¡Islas con cañón apareciendo!', 'warning');
-    }
-    
-    if (!state.enemyBoatsUnlocked && score >= config.enemySpawnScore) {
-      state.enemyBoatsUnlocked = true;
-      addNotification('¡Barcos perseguidores!', 'danger');
-    }
-    
-    if (!state.planesUnlocked && score >= config.planeSpawnScore) {
-      state.planesUnlocked = true;
-      addNotification('¡Aviones bombardeadores!', 'danger');
-    }
-  };
-
-  // Game loop
+  // Game loop - CORREGIDO
   useEffect(() => {
     if (!gameStarted || gameOver) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
+
+    // Mover checkEnemyUnlocks dentro del useEffect
+    const checkEnemyUnlocks = () => {
+      const state = gameState.current;
+      
+      if (!state.cannonIslandsUnlocked && score >= config.cannonIslandSpawnScore) {
+        state.cannonIslandsUnlocked = true;
+        addNotification('¡Islas con cañón apareciendo!', 'warning');
+      }
+      
+      if (!state.enemyBoatsUnlocked && score >= config.enemySpawnScore) {
+        state.enemyBoatsUnlocked = true;
+        addNotification('¡Barcos perseguidores!', 'danger');
+      }
+      
+      if (!state.planesUnlocked && score >= config.planeSpawnScore) {
+        state.planesUnlocked = true;
+        addNotification('¡Aviones bombardeadores!', 'danger');
+      }
+    };
 
     // Mover updateGame dentro del useEffect
     const updateGame = () => {
@@ -335,7 +354,6 @@ const Game = () => {
       
       if (state.cannonIslandsUnlocked) {
         spawnCannonIslands(state, frameCount, canvasSize);
-        // 🔊 Disparo: saber si disparó y reproducir el SFX
         const cannonFired = updateCannonIslands(state, state.boat, config);
         if (cannonFired && cannonSfxRef.current) {
           cannonSfxRef.current.currentTime = 0;
@@ -366,9 +384,9 @@ const Game = () => {
       });
       
       const shouldGameOver = checkCollisions(state, config, addNotification);
-      if (shouldGameOver) {
+      if (shouldGameOver && !gameOver) { // ← CORREGIDO: solo si no está ya en gameOver
         setGameOver(true);
-        // Guardar puntuación cuando termina el juego
+        // Guardar puntuación cuando termina el juego - SOLO UNA VEZ
         saveScore(score);
       }
       
@@ -415,7 +433,7 @@ const Game = () => {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameStarted, gameOver, score, canvasSize]);
+  }, [gameStarted, gameOver, score, canvasSize, user, scoreSaved]); // ← AGREGAR DEPENDENCIAS
 
   const startGame = () => {
     if (!imagesLoaded) {
@@ -483,6 +501,7 @@ const Game = () => {
     setGameStarted(true);
     setGameOver(false);
     setScore(0);
+    setScoreSaved(false); // ← RESETEAR: permitir guardar score nuevamente
     setNotifications([]);
     
     // CORRECCIÓN: Actualizar las propiedades sin perder la referencia
@@ -560,6 +579,7 @@ const Game = () => {
         <div className="game-start-screen">
           <h1>🌊 Esquiva Islas 🏝️</h1>
           <p>🚤 Usa las flechas ← → para girar</p>
+          {isMobile && <p>📱 O usa los botones en pantalla</p>}
           <p>🎯 Esquiva islas y enemigos</p>
           <p>🛡️ Escudo de emergencia: Te salva una vez del daño</p>
           <p>⚡ Desactiva enemigos: Congela barcos perseguidores</p>
@@ -665,26 +685,33 @@ const Game = () => {
         />
       </div>
 
-      {/* Controles táctiles para móviles */}
+      {/* Controles táctiles para móviles - MEJORADO */}
       {isMobile && gameStarted && !gameOver && (
-        <div className="touch-controls">
-          <div 
-            className="touch-btn left"
-            onTouchStart={handleTouchLeft}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleTouchLeft}
-            onMouseUp={handleTouchEnd}
-            onMouseLeave={handleTouchEnd}
-          />
-          <div 
-            className="touch-btn right"
-            onTouchStart={handleTouchRight}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleTouchRight}
-            onMouseUp={handleTouchEnd}
-            onMouseLeave={handleTouchEnd}
-          />
-        </div>
+        <>
+          {console.log('🎮 Mostrando controles táctiles - Móvil detectado')}
+          <div className="touch-controls">
+            <div 
+              className="touch-btn left"
+              onTouchStart={handleTouchLeft}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleTouchLeft}
+              onMouseUp={handleTouchEnd}
+              onMouseLeave={handleTouchEnd}
+            >
+              ←
+            </div>
+            <div 
+              className="touch-btn right"
+              onTouchStart={handleTouchRight}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleTouchRight}
+              onMouseUp={handleTouchEnd}
+              onMouseLeave={handleTouchEnd}
+            >
+              →
+            </div>
+          </div>
+        </>
       )}
 
       {/* Modal de Game Over */}
@@ -694,7 +721,7 @@ const Game = () => {
             <h2>💀 ¡Juego Terminado! 💀</h2>
             <p>Puntuación final: {score}</p>
             {user ? (
-              <p>✅ Puntuación guardada en el ranking</p>
+              <p>✅ Puntuación {scoreSaved ? 'guardada' : 'guardándose...'} en el ranking</p>
             ) : (
               <p>⚠️ Inicia sesión para guardar tus puntuaciones</p>
             )}
