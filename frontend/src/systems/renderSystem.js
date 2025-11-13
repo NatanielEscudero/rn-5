@@ -53,7 +53,6 @@ export const drawPlayerBoat = (ctx, boat) => {
   }
 };
 
-
 export const drawNormalIsland = (ctx, island) => {
   if (gameImages.normalIsland) {
     ctx.drawImage(
@@ -202,13 +201,20 @@ export const drawPowerUp = (ctx, powerUp) => {
         ctx.arc(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, powerUp.width/4, 0, Math.PI * 2);
         ctx.fill();
         break;
+        
+      default:
+        // Caso por defecto para cualquier tipo de power-up no manejado
+        ctx.fillStyle = '#FFFF00';
+        ctx.beginPath();
+        ctx.arc(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, powerUp.width/2, 0, Math.PI * 2);
+        ctx.fill();
+        break;
     }
     
     ctx.restore();
   }
 };
 
-// En renderSystem.js, modifica drawShield (este se mantiene igual ya que es un efecto):
 export const drawShield = (ctx, boat) => {
   ctx.save();
   

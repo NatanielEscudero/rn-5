@@ -1,16 +1,11 @@
 // src/pages/Home.jsx
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Game from "../components/Game"; // Ruta corregida
 import "../styles/home.css";
 
 export default function Home() {
   const navigate = useNavigate();
-  const [showGame, setShowGame] = useState(false);
-
-  if (showGame) {
-    return <Game />;
-  }
 
   return (
     <div

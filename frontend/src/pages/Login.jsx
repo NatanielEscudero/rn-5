@@ -74,28 +74,6 @@ export default function Login() {
     }
   };
 
-  // Función para login con Google
-  const handleGoogleLogin = async () => {
-    try {
-      setLoading(true);
-      setMessage("");
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
-      });
-
-      if (error) throw error;
-      
-    } catch (error) {
-      console.error('❌ Error en login con Google:', error);
-      setMessage(`❌ Error al iniciar sesión con Google`);
-      setLoading(false);
-    }
-  };
-
   // Función para recuperar contraseña
   const handlePasswordReset = async () => {
     if (!email) {

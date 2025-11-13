@@ -17,6 +17,43 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [statsLoaded, setStatsLoaded] = useState(false);
 
+  const getDefaultStats = () => ({
+    highestScore: 0,
+    totalGames: 0,
+    averageScore: 0,
+    lastScores: []
+  });
+
+  const fetchUserStats = async (userId = user?.id) => {
+    try {
+      setLoading(true);
+      setError(null);
+      setStatsLoaded(false);
+      
+      if (!userId) {
+        console.log('ℹ️ Sin userId, usando estadísticas por defecto');
+        setUserStats(getDefaultStats());
+        setStatsLoaded(true);
+        return;
+      }
+
+      console.log('📊 Cargando estadísticas para:', userId);
+      const stats = await supabaseGameService.getUserStats(userId);
+      console.log('✅ Estadísticas cargadas:', stats);
+      
+      setUserStats(stats);
+      setStatsLoaded(true);
+      
+    } catch (err) {
+      console.error('❌ Error cargando estadísticas:', err);
+      setError(err.message || 'Error al cargar estadísticas');
+      setUserStats(getDefaultStats());
+      setStatsLoaded(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -160,37 +197,7 @@ export default function Dashboard() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
-
-  const fetchUserStats = async (userId = user?.id) => {
-    try {
-      setLoading(true);
-      setError(null);
-      setStatsLoaded(false);
-      
-      if (!userId) {
-        console.log('ℹ️ Sin userId, usando estadísticas por defecto');
-        setUserStats(getDefaultStats());
-        setStatsLoaded(true);
-        return;
-      }
-
-      console.log('📊 Cargando estadísticas para:', userId);
-      const stats = await supabaseGameService.getUserStats(userId);
-      console.log('✅ Estadísticas cargadas:', stats);
-      
-      setUserStats(stats);
-      setStatsLoaded(true);
-      
-    } catch (err) {
-      console.error('❌ Error cargando estadísticas:', err);
-      setError(err.message || 'Error al cargar estadísticas');
-      setUserStats(getDefaultStats());
-      setStatsLoaded(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, []); // Solo se ejecuta una vez al montar
 
   const handleLogout = async () => {
     try {
@@ -208,13 +215,6 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
-
-  const getDefaultStats = () => ({
-    highestScore: 0,
-    totalGames: 0,
-    averageScore: 0,
-    lastScores: []
-  });
 
   const renderGuestStats = () => (
     <div className="stats-container">

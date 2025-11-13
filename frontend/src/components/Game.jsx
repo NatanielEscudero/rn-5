@@ -305,91 +305,6 @@ const Game = () => {
     }
   };
 
-  const updateGame = () => {
-    const state = gameState.current;
-    const frameCount = state.frameCount;
-    
-    updateBoat(state, canvasSize);
-    
-    const shieldNotifications = updateShield(state, config);
-    shieldNotifications.forEach(notification => addNotification(notification, 'warning'));
-    
-    const enemyNotifications = updateDisabledEnemies(state);
-    enemyNotifications.forEach(notification => addNotification(notification, 'danger'));
-    
-    adjustSpawnRates(state);
-    
-    spawnIslands(state, frameCount, canvasSize);
-    spawnPowerUps(state, frameCount, canvasSize);
-    
-    checkEnemyUnlocks();
-    
-    if (state.cannonIslandsUnlocked) {
-      spawnCannonIslands(state, frameCount, canvasSize);
-      // 🔊 Disparo: saber si disparó y reproducir el SFX
-      const cannonFired = updateCannonIslands(state, state.boat, config);
-      if (cannonFired && cannonSfxRef.current) {
-        cannonSfxRef.current.currentTime = 0;
-        cannonSfxRef.current.play()
-          .catch((e) => {
-            console.warn("Play SFX rechazado:", e?.name, e?.message);
-          });
-      }
-    }
-    
-    if (state.enemyBoatsUnlocked) {
-      spawnEnemies(state, frameCount, canvasSize, config);
-      updateEnemies(state, state.boat, canvasSize);
-    }
-    
-    if (state.planesUnlocked) {
-      spawnPlanes(state, frameCount, canvasSize);
-      updatePlanes(state, state.boat, config);
-    }
-    
-    updateBullets(state, canvasSize);
-    updateBombs(state, canvasSize);
-    
-    const activatedPowerUps = updatePowerUps(state, state.boat);
-    activatedPowerUps.forEach(powerUpType => {
-      const powerUpNotifications = activatePowerUp(powerUpType, state, config);
-      powerUpNotifications.forEach(notification => addNotification(notification, 'info'));
-    });
-    
-    const shouldGameOver = checkCollisions(state, config, addNotification);
-    if (shouldGameOver) {
-      setGameOver(true);
-      // Guardar puntuación cuando termina el juego
-      saveScore(score);
-    }
-    
-    if (frameCount % 10 === 0) {
-      setScore(prev => prev + 1);
-    }
-  };
-
-  const renderGame = (ctx) => {
-    const state = gameState.current;
-
-    // LIMPIAR CANVAS - AHORA TRANSPARENTE PARA VER EL FONDO DE AGUA
-    ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
-
-    // Dibujar elementos con imágenes
-    state.powerUps.forEach(powerUp => drawPowerUp(ctx, powerUp));
-    state.islands.forEach(island => drawNormalIsland(ctx, island));
-    state.cannonIslands.forEach(island => drawCannonIsland(ctx, island));
-    state.enemyBoats.forEach(enemy => drawEnemyBoat(ctx, enemy));
-    state.planes.forEach(plane => drawPlane(ctx, plane));
-
-    // Dibujar proyectiles con imágenes
-    drawProjectiles(ctx, state.bullets, state.bombs);
-
-    // Dibujar jugador y efectos
-    drawPlayerBoat(ctx, state.boat);
-    drawShield(ctx, state.boat);
-    drawBoatTrail(ctx, state.boat);
-  };
-
   // Game loop
   useEffect(() => {
     if (!gameStarted || gameOver) return;
@@ -397,6 +312,93 @@ const Game = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
+
+    // Mover updateGame dentro del useEffect
+    const updateGame = () => {
+      const state = gameState.current;
+      const frameCount = state.frameCount;
+      
+      updateBoat(state, canvasSize);
+      
+      const shieldNotifications = updateShield(state, config);
+      shieldNotifications.forEach(notification => addNotification(notification, 'warning'));
+      
+      const enemyNotifications = updateDisabledEnemies(state);
+      enemyNotifications.forEach(notification => addNotification(notification, 'danger'));
+      
+      adjustSpawnRates(state);
+      
+      spawnIslands(state, frameCount, canvasSize);
+      spawnPowerUps(state, frameCount, canvasSize);
+      
+      checkEnemyUnlocks();
+      
+      if (state.cannonIslandsUnlocked) {
+        spawnCannonIslands(state, frameCount, canvasSize);
+        // 🔊 Disparo: saber si disparó y reproducir el SFX
+        const cannonFired = updateCannonIslands(state, state.boat, config);
+        if (cannonFired && cannonSfxRef.current) {
+          cannonSfxRef.current.currentTime = 0;
+          cannonSfxRef.current.play()
+            .catch((e) => {
+              console.warn("Play SFX rechazado:", e?.name, e?.message);
+            });
+        }
+      }
+      
+      if (state.enemyBoatsUnlocked) {
+        spawnEnemies(state, frameCount, canvasSize, config);
+        updateEnemies(state, state.boat, canvasSize);
+      }
+      
+      if (state.planesUnlocked) {
+        spawnPlanes(state, frameCount, canvasSize);
+        updatePlanes(state, state.boat, config);
+      }
+      
+      updateBullets(state, canvasSize);
+      updateBombs(state, canvasSize);
+      
+      const activatedPowerUps = updatePowerUps(state, state.boat);
+      activatedPowerUps.forEach(powerUpType => {
+        const powerUpNotifications = activatePowerUp(powerUpType, state, config);
+        powerUpNotifications.forEach(notification => addNotification(notification, 'info'));
+      });
+      
+      const shouldGameOver = checkCollisions(state, config, addNotification);
+      if (shouldGameOver) {
+        setGameOver(true);
+        // Guardar puntuación cuando termina el juego
+        saveScore(score);
+      }
+      
+      if (frameCount % 10 === 0) {
+        setScore(prev => prev + 1);
+      }
+    };
+
+    // Mover renderGame dentro del useEffect
+    const renderGame = (ctx) => {
+      const state = gameState.current;
+
+      // LIMPIAR CANVAS - AHORA TRANSPARENTE PARA VER EL FONDO DE AGUA
+      ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
+
+      // Dibujar elementos con imágenes
+      state.powerUps.forEach(powerUp => drawPowerUp(ctx, powerUp));
+      state.islands.forEach(island => drawNormalIsland(ctx, island));
+      state.cannonIslands.forEach(island => drawCannonIsland(ctx, island));
+      state.enemyBoats.forEach(enemy => drawEnemyBoat(ctx, enemy));
+      state.planes.forEach(plane => drawPlane(ctx, plane));
+
+      // Dibujar proyectiles con imágenes
+      drawProjectiles(ctx, state.bullets, state.bombs);
+
+      // Dibujar jugador y efectos
+      drawPlayerBoat(ctx, state.boat);
+      drawShield(ctx, state.boat);
+      drawBoatTrail(ctx, state.boat);
+    };
 
     const gameLoop = () => {
       gameState.current.frameCount++;
