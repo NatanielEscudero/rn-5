@@ -626,7 +626,7 @@ useEffect(() => {
         {/* FONDO DE AGUA ANIMADO SOLO EN EL CONTENEDOR DEL CANVAS */}
         <div className="canvas-background-container">
           <img
-            src="/imagenes/agua.gif"
+            src="/imagenes/agua.png"
             alt="Fondo agua animado"
             className="canvas-background"
           />
@@ -686,7 +686,7 @@ useEffect(() => {
       {/* FONDO DE AGUA ANIMADO SOLO EN EL CONTENEDOR DEL CANVAS */}
       <div className="canvas-background-container">
         <img
-          src="/imagenes/agua.gif"
+          src="/imagenes/agua.png"
           alt="Fondo agua animado"
           className="canvas-background"
         />

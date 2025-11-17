@@ -30,7 +30,12 @@ export const canvasBaseSize = {
 // Tamaños VISUALES estándar (para renderizar las imágenes)
 // Estos son los tamaños que ocuparán visualmente en el canvas
 export const visualSizes = {
-  playerBoat: { width: 50, height: 40 },
+  playerBoat: { 
+    width: 32,   // antes 40 -> más angosto
+    height: 38,  // antes 32 -> más alto
+    offsetX: 9,  // (50 - 32) / 2
+    offsetY: 1   // (40 - 38) / 2
+  },
   normalIsland: { width: 80, height: 80 },
   cannonIsland: { width: 100, height: 100 },
   enemyBoat: { width: 50, height: 40 },

@@ -167,53 +167,93 @@ export const drawPlane = (ctx, plane) => {
 };
 
 export const drawPowerUp = (ctx, powerUp) => {
-  if (gameImages.powerUp) {
+  // Elegir imagen según el tipo de power-up
+  let sprite = null;
+
+  switch (powerUp.type) {
+    case 'shield':
+      sprite = gameImages.powerUp;   // /imagenes/escudo.png
+      break;
+    case 'disableEnemies':
+      sprite = gameImages.bomb;      // /imagenes/bomba.png
+      break;
+    default:
+      sprite = null;
+      break;
+  }
+
+  // Si tenemos sprite cargado, lo dibujamos
+  if (sprite) {
     ctx.drawImage(
-      gameImages.powerUp,
+      sprite,
       powerUp.x,
       powerUp.y,
       powerUp.width,
       powerUp.height
     );
-  } else {
-    // Fallback a tu código original
-    ctx.save();
-    
-    switch(powerUp.type) {
-      case 'shield':
-        ctx.fillStyle = '#00FFFF';
-        ctx.beginPath();
-        ctx.arc(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, powerUp.width/2, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, powerUp.width/2 - 2, 0, Math.PI * 2);
-        ctx.stroke();
-        break;
-        
-      case 'disableEnemies':
-        ctx.fillStyle = '#FF00FF';
-        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
-        
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, powerUp.width/4, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-        
-      default:
-        // Caso por defecto para cualquier tipo de power-up no manejado
-        ctx.fillStyle = '#FFFF00';
-        ctx.beginPath();
-        ctx.arc(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, powerUp.width/2, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-    }
-    
-    ctx.restore();
+    return; // Nos vamos, no usamos el fallback
   }
+
+  // Si la imagen no está cargada, usamos el fallback dibujado
+  ctx.save();
+
+  switch (powerUp.type) {
+    case 'shield':
+      ctx.fillStyle = '#00FFFF';
+      ctx.beginPath();
+      ctx.arc(
+        powerUp.x + powerUp.width / 2,
+        powerUp.y + powerUp.height / 2,
+        powerUp.width / 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(
+        powerUp.x + powerUp.width / 2,
+        powerUp.y + powerUp.height / 2,
+        powerUp.width / 2 - 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.stroke();
+      break;
+
+    case 'disableEnemies':
+      ctx.fillStyle = '#FF00FF';
+      ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(
+        powerUp.x + powerUp.width / 2,
+        powerUp.y + powerUp.height / 2,
+        powerUp.width / 4,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      break;
+
+    default:
+      ctx.fillStyle = '#FFFF00';
+      ctx.beginPath();
+      ctx.arc(
+        powerUp.x + powerUp.width / 2,
+        powerUp.y + powerUp.height / 2,
+        powerUp.width / 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      break;
+  }
+
+  ctx.restore();
 };
 
 export const drawShield = (ctx, boat) => {
@@ -330,6 +370,40 @@ export const drawHitboxes = (ctx, state) => {
     ctx.restore();
   };
 
+  const drawRotatedEllipse = (obj, hDef, color = 'rgba(0,255,255,0.18)') => {
+    const angle = (obj.angle || 0) * Math.PI / 180;
+    const cx = obj.x + obj.width / 2;
+    const cy = obj.y + obj.height / 2;
+    const offX = hDef.offsetX || 0;
+    const offY = hDef.offsetY || 0;
+    const w = hDef.width || obj.width;
+    const h = hDef.height || obj.height;
+
+    const radiusX = w / 2;
+    const radiusY = h / 2;
+
+    ctx.save();
+    ctx.translate(cx + offX, cy + offY);
+    ctx.rotate(angle);
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, radiusX, radiusY, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    try {
+      ctx.strokeStyle = String(color).replace(/,\s*([0-9]*\.?[0-9]+)\)$/, ', 1)');
+    } catch (e) {
+      ctx.strokeStyle = 'rgba(0,255,255,1)';
+    }
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, radiusX, radiusY, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.restore();
+  };
+
   // Helper to compute hitbox rect from visual object and type
   const getHitboxRect = (obj, type) => {
     const h = hitboxSizes[type] || { width: obj.width, height: obj.height, offsetX: 0, offsetY: 0 };
@@ -343,8 +417,8 @@ export const drawHitboxes = (ctx, state) => {
     const boat = state.boat;
     if (boat) {
       const hDef = hitboxSizes['playerBoat'] || { width: boat.width, height: boat.height, offsetX: 0, offsetY: 0 };
-      // Dibujar rectángulo rotado para que siga la orientación del barco
-      drawRotatedRect(boat, hDef, 'rgba(0,255,255,0.18)');
+      // Dibujar óvalo rotado para que siga la orientación del barco
+      drawRotatedEllipse(boat, hDef, 'rgba(0,255,255,0.18)');
     }
 
     // Islands

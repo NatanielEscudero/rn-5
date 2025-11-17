@@ -4,13 +4,13 @@ import { hitboxSizes } from './gameConfig';
 
 // Obtener hitbox real basado en tamaño visual y tipo de objeto
 const getHitboxRect = (object) => {
-  if (!object || !object.type) return null;
-  
-  // Obtener hitbox específico para el tipo de objeto
-  const hitbox = hitboxSizes[object.type] || null;
-  
+  if (!object) return null;
+
+  const type = object.type;
+  const hitbox = (type && hitboxSizes[type]) || null;
+
+  // Si no hay hitbox específico, usar el objeto completo
   if (!hitbox) {
-    // Si no hay hitbox específico, usar el objeto completo
     return {
       x: object.x,
       y: object.y,
@@ -18,11 +18,10 @@ const getHitboxRect = (object) => {
       height: object.height
     };
   }
-  
-  // Calcular posición de hitbox dentro del objeto visual
+
   const offsetX = hitbox.offsetX || 0;
   const offsetY = hitbox.offsetY || 0;
-  
+
   return {
     x: object.x + offsetX,
     y: object.y + offsetY,
@@ -39,13 +38,53 @@ export const checkRectCollision = (rect1, rect2) => {
          rect1.y + rect1.height > rect2.y;
 };
 
+// --- NUEVO: colisión elipse vs rectángulo ---
+
+// ellipseRectCollision: la elipse es A, el rectángulo es B
+const ellipseRectCollision = (ellipseRect, rect) => {
+  if (!ellipseRect || !rect) return false;
+
+  // Centro y radios de la elipse
+  const centerX = ellipseRect.x + ellipseRect.width / 2;
+  const centerY = ellipseRect.y + ellipseRect.height / 2;
+  const radiusX = ellipseRect.width / 2;
+  const radiusY = ellipseRect.height / 2;
+
+  if (radiusX <= 0 || radiusY <= 0) return false;
+
+  // Punto más cercano del rectángulo a la elipse
+  const closestX = Math.max(rect.x, Math.min(centerX, rect.x + rect.width));
+  const closestY = Math.max(rect.y, Math.min(centerY, rect.y + rect.height));
+
+  const dx = closestX - centerX;
+  const dy = closestY - centerY;
+
+  const nx = dx / radiusX;
+  const ny = dy / radiusY;
+
+  // Ecuación de la elipse normalizada: x² + y² <= 1 → colisión
+  return (nx * nx + ny * ny) <= 1;
+};
+
 // Colisión usando hitbox
 export const checkHitboxCollision = (obj1, obj2) => {
   const hitbox1 = getHitboxRect(obj1);
   const hitbox2 = getHitboxRect(obj2);
-  
+
   if (!hitbox1 || !hitbox2) return false;
-  
+
+  const isPlayer1 = obj1 && obj1.type === 'playerBoat';
+  const isPlayer2 = obj2 && obj2.type === 'playerBoat';
+
+  // Player (elipse) contra rectángulo normal
+  if (isPlayer1 && !isPlayer2) {
+    return ellipseRectCollision(hitbox1, hitbox2);
+  }
+  if (isPlayer2 && !isPlayer1) {
+    return ellipseRectCollision(hitbox2, hitbox1);
+  }
+
+  // Si ambos son playerBoat (caso raro) o ninguno lo es → rect vs rect como antes
   return checkRectCollision(hitbox1, hitbox2);
 };
 
